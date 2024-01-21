@@ -89,14 +89,14 @@ class SwerveModule:
       # driving.
       state.speed *= (state.angle - encoderRotation).cos()
 
-      # Calculate the drive output from the drive PID controller.
+      # Calculate the drive output from the drive PID controller1.
       driveOutput = self.drivePIDController.calculate(
          self.DriveEncoder.getRate(), state.speed
       )
 
       driveFeedforward = self.driveFeedforward.calculate(state.speed)
 
-      # Calculate the turning motor output from the turning PID controller.
+      # Calculate the turning motor output from the turning PID controller1.
       turnOutput = self.turningPIDController.calculate(
          self.TurnEncoder.getDistance(), state.angle.radians()
       )

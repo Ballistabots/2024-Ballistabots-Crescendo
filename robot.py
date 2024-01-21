@@ -9,7 +9,9 @@ import components.drivetrain as drivetrain
 class MyRobot(wpilib.TimedRobot):
    def robotInit(self) -> None:
       """Robot initialization function"""
-      self.controller = wpilib.XboxController(0)
+      self.controller1 = wpilib.XboxController(0)
+      #self.controller1 = wpilib.Joystick(0)
+      #self.cotroller1 = wpilib.PS5Controller(0)
       self.swerve = drivetrain.Drivetrain()
 
       # Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
@@ -32,7 +34,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # negative values when we push forward.
    xSpeed = (
            -self.xspeedLimiter.calculate(
-              wpimath.applyDeadband(self.controller.getLeftY(), 0.02)
+              wpimath.applyDeadband(self.controller1.getLeftY(), 0.02)
            )
            * drivetrain.kMaxSpeed
    )
@@ -42,7 +44,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # return positive values when you pull to the right by default.
    ySpeed = (
            -self.yspeedLimiter.calculate(
-              wpimath.applyDeadband(self.controller.getLeftX(), 0.02)
+              wpimath.applyDeadband(self.controller1.getLeftX(), 0.02)
            )
            * drivetrain.kMaxSpeed
    )
@@ -53,7 +55,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # the right by default.
    rot = (
            -self.rotLimiter.calculate(
-              wpimath.applyDeadband(self.controller.getRightX(), 0.02)
+              wpimath.applyDeadband(self.controller1.getRightX(), 0.02)
            )
            * drivetrain.kMaxSpeed
    )
