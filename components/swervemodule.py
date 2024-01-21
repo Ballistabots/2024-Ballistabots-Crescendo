@@ -10,7 +10,7 @@ import wpimath.trajectory
 import wpimath.geometry
 
 kWheelRadius = 2  # wheel radius
-kEncoderResolution = 4096  # encoder resolution change once u know which encoders we using
+kEncoderResolution = 4096  # encoder resolution
 kModuleMaxAngularVelocity = math.pi  # max angular vel for a single module#
 kModuleMaxAngularAcceleration = math.tau  # max angular accel for a single module
 
