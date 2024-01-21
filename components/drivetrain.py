@@ -1,4 +1,6 @@
 import math
+
+import wpilib
 import wpimath.geometry
 import wpimath.kinematics
 import components.swervemodule as swervemodule
@@ -21,7 +23,7 @@ class Drivetrain:
       self.backLeft = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
       self.backRight = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
 
-      # self.gyro = wpilib.AnalogGyro(0)
+      self.gyro = wpilib.AnalogGyro(0)
 
       self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
          # makes kinematics happy
@@ -31,10 +33,9 @@ class Drivetrain:
          self.backRightLocation,
       )
 
-      """
-      #odometry without odometry pods :(
+      # odometry without odometry pods :(
       self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
-         #used for path planning and auto
+         # used for path planning and auto
          self.kinematics,
          self.gyro.getRotation2d(),
          (
@@ -44,47 +45,28 @@ class Drivetrain:
             self.backRight.GetPosition(),
          ),
       )
-      """
 
       # self.gyro.reset()
-      def drive(
-              self,
-              xSpeed: float,
-              ySpeed: float,
-              rot: float,
-              fieldRelative: bool,
-              periodSeconds: float,
-      ) -> None:
-         """
-         Method to drive the robot using joystick info.
-         :param xSpeed: Speed of the robot in the x direction (forward).
-         :param ySpeed: Speed of the robot in the y direction (sideways).
-         :param rot: Angular rate of the robot.
-         :param fieldRelative: Whether the provided x and y speeds are relative to the field.
-         :param periodSeconds: Time
-         """
-         swerveModuleStates = self.kinematics.toSwerveModuleStates(
-            wpimath.kinematics.ChassisSpeeds.discretize(
-               wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                  xSpeed, ySpeed, rot, self.gyro.getRotation2d()
-               )
-               if fieldRelative
-               else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot),
-               periodSeconds,
+
+   def drive(self, xSpeed: float, ySpeed: float, rot: float, fieldRelative: bool, periodSeconds: float, ) -> None:
+      swerveModuleStates = self.kinematics.toSwerveModuleStates(
+         wpimath.kinematics.ChassisSpeeds.discretize(
+            wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
+               xSpeed, ySpeed, rot, self.gyro.getRotation2d()
             )
+            if fieldRelative
+            else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot),
+            periodSeconds,
          )
-         wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(
-            swerveModuleStates, kMaxSpeed
-         )
-         self.frontLeft.setDesiredState(swerveModuleStates[0])
-         self.frontRight.setDesiredState(swerveModuleStates[1])
-         self.backLeft.setDesiredState(swerveModuleStates[2])
-         self.backRight.setDesiredState(swerveModuleStates[3])
+      )
+      wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed)
+      self.frontLeft.SetState(swerveModuleStates[0])
+      self.frontRight.SetState(swerveModuleStates[1])
+      self.backLeft.SetState(swerveModuleStates[2])
+      self.backRight.SetState(swerveModuleStates[3])
 
-
-"""
    def updateOdometry(self) -> None:
-      #Updates the field relative position of the robot
+      # Updates the field relative position of the robot
       self.odometry.update(
          self.gyro.getRotation2d(),
          (
@@ -95,4 +77,6 @@ class Drivetrain:
          ),
       )
 
-"""
+
+   def DriveTo(x:int, y: int, speed: int)-> str:
+      return f"Dri[]ving to {x},{y} at speed {speed}"

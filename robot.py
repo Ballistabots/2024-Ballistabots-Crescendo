@@ -3,7 +3,7 @@ import wpimath
 import wpilib.drive
 import wpimath.filter
 import wpimath.controller
-import components.drivetrain as drivetrain
+from components import drivetrain
 
 
 class MyRobot(wpilib.TimedRobot):
@@ -23,6 +23,8 @@ class MyRobot(wpilib.TimedRobot):
 def autonomousPeriodic(self) -> None:
    self.driveWithJoystick(False)
    #self.swerve.updateOdometry()
+   print(self.swerve.DriveTo(10,10,1))
+
 
 
 def teleopPeriodic(self) -> None:
@@ -34,7 +36,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # negative values when we push forward.
    xSpeed = (
            -self.xspeedLimiter.calculate(
-              wpimath.applyDeadband(self.controller1.getLeftY(), 0.02)
+              wpimath.applyDeadband(self.controller1.getLeftY(), 0.02)#dont ask me what this is for cause i have no idea
            )
            * drivetrain.kMaxSpeed
    )
@@ -44,7 +46,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # return positive values when you pull to the right by default.
    ySpeed = (
            -self.yspeedLimiter.calculate(
-              wpimath.applyDeadband(self.controller1.getLeftX(), 0.02)
+              wpimath.applyDeadband(self.controller1.getLeftX(), 0.02)#dont ask me what this is for cause i have no idea
            )
            * drivetrain.kMaxSpeed
    )
@@ -55,9 +57,10 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    # the right by default.
    rot = (
            -self.rotLimiter.calculate(
-              wpimath.applyDeadband(self.controller1.getRightX(), 0.02)
+              wpimath.applyDeadband(self.controller1.getRightX(), 0.02)#dont ask me what this is for cause i have no idea
            )
            * drivetrain.kMaxSpeed
    )
 
    self.swerve.drive(xSpeed, ySpeed, rot, fieldRelative, self.getPeriod())
+
