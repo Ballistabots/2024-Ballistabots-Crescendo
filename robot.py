@@ -1,54 +1,61 @@
-import rev as Rev
 import wpilib
+import wpimath
 import wpilib.drive
-from phoenix6.hardware.core.core_talon_fx import CoreTalonFX
+import wpimath.filter
+import wpimath.controller
+import components.drivetrain as drivetrain
 
 
 class MyRobot(wpilib.TimedRobot):
-   # nothinng
-   # print("nothing please leave me alone this is nothing im not crazy, crazy? i was crazy once, they locked me in a room, a rubber room. a rubber room with rats. RATS? rats make me crazy, crazy?")
-   def robotPeriodic(self):
-      pass
-
-
    def robotInit(self) -> None:
-      self.frontLeft = Rev.CANSparkMax(7, Rev.CANSparkMax.MotorType.kBrushless)
-      self.frontRight = Rev.CANSparkMax(5, Rev.CANSparkMax.MotorType.kBrushless)
-      self.backLeft = Rev.CANSparkMax(1, Rev.CANSparkMax.MotorType.kBrushless)
-      self.backRight = Rev.CANSparkMax(6, Rev.CANSparkMax.MotorType.kBrushless)
+      """Robot initialization function"""
+      self.controller = wpilib.XboxController(0)
+      self.swerve = drivetrain.Drivetrain()
+
+      # Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
+      self.xspeedLimiter = wpimath.filter.SlewRateLimiter(3)
+      self.yspeedLimiter = wpimath.filter.SlewRateLimiter(3)
+      self.rotLimiter = wpimath.filter.SlewRateLimiter(3)
 
 
-      self.outake = CoreTalonFX(1,'rio')
-      self.intake = Rev.CANSparkMax(2, Rev.CANSparkMax.MotorType.kBrushless)
-      self.belt = Rev.CANSparkMax(3,Rev.CANSparkMax.MotorType.kBrushless)
-
-      self.slow = 0.5
-
-      self.frontRight.setInverted(True)
-
-      self.backRight.setInverted(True)
+def autonomousPeriodic(self) -> None:
+   self.driveWithJoystick(False)
+   self.swerve.updateOdometry()
 
 
+def teleopPeriodic(self) -> None:
+   self.driveWithJoystick(True)
 
-      self.robotDrive = wpilib.drive.MecanumDrive(self.frontLeft, self.backLeft, self.frontRight,self.backRight)
-      self.driver = wpilib.Joystick(0)
 
-   def teleopPeriodic(self):
-      self.robotDrive.driveCartesian(
-         -self.driver.getY() * self.slow,
-         -self.driver.getX() * self.slow,
-         -self.driver.getZ() * self.slow,
-      )
-      if self.driver.getTrigger():
-         self.intake.setVoltage(-30)
-         self.belt.setVoltage(30)
-      else:
-         self.intake.setVoltage(0)
-         self.belt.setVoltage(0)
+def driveWithJoystick(self, fieldRelative: bool) -> None:
+   # Get the x speed. We are inverting this because Xbox controllers return
+   # negative values when we push forward.
+   xSpeed = (
+           -self.xspeedLimiter.calculate(
+              wpimath.applyDeadband(self.controller.getLeftY(), 0.02)
+           )
+           * drivetrain.kMaxSpeed
+   )
 
-      if self.driver.getThrottle() > .30:
-          #figure this out please !!!!! self.outake.
-          print("shot")
+   # Get the y speed or sideways/strafe speed we are inverting this because
+   # we want a positive value when we pull to the left. Xbox controllers
+   # return positive values when you pull to the right by default.
+   ySpeed = (
+           -self.yspeedLimiter.calculate(
+              wpimath.applyDeadband(self.controller.getLeftX(), 0.02)
+           )
+           * drivetrain.kMaxSpeed
+   )
 
-if __name__ == "__main__":
-    wpilib.run(MyRobot)
+   # Get the rate of angular rotation. We are inverting this because we want a
+   # positive value when we pull to the left (remember, CCW is positive in
+   # mathematics). Xbox controllers return positive values when you pull to
+   # the right by default.
+   rot = (
+           -self.rotLimiter.calculate(
+              wpimath.applyDeadband(self.controller.getRightX(), 0.02)
+           )
+           * drivetrain.kMaxSpeed
+   )
+
+   self.swerve.drive(xSpeed, ySpeed, rot, fieldRelative, self.getPeriod())
