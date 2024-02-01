@@ -28,7 +28,7 @@ def autonomousPeriodic(self) -> None:
 
 
 def teleopPeriodic(self) -> None:
-   self.driveWithJoystick(True)
+   self.driveWithJoystick(False)
 
 
 def driveWithJoystick(self, fieldRelative: bool) -> None:
