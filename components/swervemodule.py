@@ -104,5 +104,5 @@ class SwerveModule:
       turnFeedforward = self.turnFeedforward.calculate(
          self.turningPIDController.getSetpoint().velocity
       )
-      self.DriveEncoder.setVoltage(driveOutput + driveFeedforward)
+      self.DriveMotor.setVoltage(driveOutput + driveFeedforward)
       self.TurningMotor.setVoltage(turnOutput + turnFeedforward)

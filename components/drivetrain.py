@@ -3,6 +3,8 @@ import math
 import wpilib
 import wpimath.geometry
 import wpimath.kinematics
+from wpimath.geometry import Pose2d
+
 import components.swervemodule as swervemodule
 
 kMaxSpeed = 3.0  # 3 meters per second
@@ -18,10 +20,10 @@ class Drivetrain:
       self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
 
       # creates the motor objects
-      self.frontLeft = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
-      self.frontRight = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
-      self.backLeft = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
-      self.backRight = swervemodule.SwerveModule(0, 0, 0, 0, 0, 0)
+      self.frontLeft = swervemodule.SwerveModule(4, 0, 0, 3, 0, 0)
+      self.frontRight = swervemodule.SwerveModule(6, 0, 0, 5, 0, 0)
+      self.backLeft = swervemodule.SwerveModule(2, 0, 0, 1, 0, 0)
+      self.backRight = swervemodule.SwerveModule(8, 0, 0, 7, 0, 0)
 
       self.gyro = wpilib.AnalogGyro(0)
 
@@ -54,6 +56,7 @@ class Drivetrain:
             wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
                xSpeed, ySpeed, rot, self.gyro.getRotation2d()
             )
+
             if fieldRelative
             else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot),
             periodSeconds,
@@ -65,9 +68,9 @@ class Drivetrain:
       self.backLeft.SetState(swerveModuleStates[2])
       self.backRight.SetState(swerveModuleStates[3])
 
-   def updateOdometry(self) -> None:
+   def updateOdometry(self) -> Pose2d:
       # Updates the field relative position of the robot
-      self.odometry.update(
+      return self.odometry.update(
          self.gyro.getRotation2d(),
          (
             self.frontLeft.GetPosition(),
@@ -77,10 +80,16 @@ class Drivetrain:
          ),
       )
 
+   def DriveTo(self, x: int, y: int, rot:float, speed: float = 0.5) -> str:
+      """
+      drives using encoders to cartesian coordinates
+      """
 
-   def DriveTo(x:int, y: int, speed: int)-> str:
-      """
-      drives using encoders
-      
-      """
-      return f"Dri[]ving to {x},{y} at speed {speed}"
+      currentPos = self.updateOdometry()
+
+      requestedX_Pose = currentPos.x + x
+      requestedY_Pose = currentPos.y + y
+      requestedRot_Pose = self.odometry.getPose() + rot
+      return f"Driving to {x},{y}, pose is {rot} at speed {speed}"
+   def Spline(self, x: int, y: int, rot:float):
+      self.DriveTo(x, y, rot)
