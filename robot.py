@@ -10,8 +10,8 @@ from components import drivetrain
 class MyRobot(wpilib.TimedRobot):
    def robotInit(self) -> None:
       """Robot initialization function"""
-      self.controller1 = wpilib.XboxController(0)
-      # self.controller1 = wpilib.Joystick(0)
+      #self.controller1 = wpilib.XboxController(0)
+      self.controller1 = wpilib.Joystick(0)
       # self.cotroller1 = wpilib.PS5Controller(0)
       self.swerve = drivetrain.Drivetrain()
 
@@ -21,16 +21,20 @@ class MyRobot(wpilib.TimedRobot):
       self.rotLimiter = wpimath.filter.SlewRateLimiter(3)
 
 
-
+def autnomousInit(self) -> None:
+   pass
 
 def autonomousPeriodic(self) -> None:
    self.driveWithJoystick(False)
-   # self.swerve.updateOdometry()
-   print(self.swerve.DriveTo(10, 10, 90.0, 1))
+   self.swerve.updateOdometry()
 
-
-def teleopPeriodic(self) -> None:
+def TeleopInit(self) -> None:
+   print("Tele-op enabled")
+def TeleopPeriodic(self) -> None:
    self.driveWithJoystick(True)
+
+def disabledPeriodic(self) -> None:
+   pass
 
 
 def driveWithJoystick(self, fieldRelative: bool) -> None:
@@ -39,7 +43,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    xSpeed = (
            -self.xspeedLimiter.calculate(
               wpimath.applyDeadband(self.controller1.getLeftY(), 0.02)
-              # dont ask me what this is for cause i have no idea
+
            )
            * drivetrain.kMaxSpeed
    )
@@ -50,7 +54,7 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    ySpeed = (
            -self.yspeedLimiter.calculate(
               wpimath.applyDeadband(self.controller1.getLeftX(), 0.02)
-              # dont ask me what this is for cause i have no idea
+
            )
            * drivetrain.kMaxSpeed
    )
@@ -62,9 +66,12 @@ def driveWithJoystick(self, fieldRelative: bool) -> None:
    rot = (
            -self.rotLimiter.calculate(
               wpimath.applyDeadband(self.controller1.getRightX(), 0.02)
-              # dont ask me what this is for cause i have no idea
+
            )
            * drivetrain.kMaxSpeed
    )
 
    self.swerve.drive(xSpeed, ySpeed, rot, fieldRelative, self.getPeriod())
+
+if __name__ == "__main__":
+   wpilib.run(MyRobot)

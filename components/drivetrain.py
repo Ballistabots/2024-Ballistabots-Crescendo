@@ -1,8 +1,8 @@
 import math
 
-import wpilib
 import wpimath.geometry
 import wpimath.kinematics
+import navx
 from wpimath.geometry import Pose2d
 
 import components.swervemodule as swervemodule
@@ -20,12 +20,12 @@ class Drivetrain:
       self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
 
       # creates the motor objects
-      self.frontLeft = swervemodule.SwerveModule(4, 0, 0, 3, 0, 0)
-      self.frontRight = swervemodule.SwerveModule(6, 0, 0, 5, 0, 0)
-      self.backLeft = swervemodule.SwerveModule(2, 0, 0, 1, 0, 0)
-      self.backRight = swervemodule.SwerveModule(8, 0, 0, 7, 0, 0)
+      self.frontLeft = swervemodule.SwerveModule(4,0,3)
+      self.frontRight = swervemodule.SwerveModule(6, 1,5)
+      self.backLeft = swervemodule.SwerveModule(2, 2,1)
+      self.backRight = swervemodule.SwerveModule(8, 3,7)
 
-      self.gyro = wpilib.AnalogGyro(0)
+      self.gyro = navx.AHRS.create_i2c()
 
       self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
          # makes kinematics happy
@@ -48,13 +48,14 @@ class Drivetrain:
          ),
       )
 
-      # self.gyro.reset()
+
+      self.gyro.reset()
 
    def drive(self, xSpeed: float, ySpeed: float, rot: float, fieldRelative: bool, periodSeconds: float, ) -> None:
       swerveModuleStates = self.kinematics.toSwerveModuleStates(
          wpimath.kinematics.ChassisSpeeds.discretize(
             wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-               xSpeed, ySpeed, rot, self.gyro.getRotation2d()
+               xSpeed, ySpeed, rot,self.gyro.getRotation2d()
             )
 
             if fieldRelative
@@ -81,9 +82,7 @@ class Drivetrain:
       )
 
    def DriveTo(self, x: int, y: int, rot:float, speed: float = 0.5) -> str:
-      """
-      drives using encoders to cartesian coordinates
-      """
+     
 
       currentPos = self.updateOdometry()
 
