@@ -1,15 +1,15 @@
-import rev
 import math
 
+# from wpilib import DriverStation
+import navx
+import phoenix6 as ctre
+import rev
 import wpilib
 import wpimath
 from wpimath import controller
+from wpimath.geometry import Translation2d, Rotation2d, Pose2d
 from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModuleState, ChassisSpeeds, SwerveDrive4Odometry, \
    SwerveModulePosition
-from wpimath.geometry import Translation2d, Rotation2d, Pose2d
-import phoenix6 as ctre
-#from wpilib import DriverStation
-import navx
 
 
 def lratio(angle):
@@ -42,7 +42,6 @@ class DriveTrain():
       self.frontLeftRotation = rev.CANSparkMax(3, rev.CANSparkMax.MotorType.kBrushless)
       self.frontRightRotation = rev.CANSparkMax(5, rev.CANSparkMax.MotorType.kBrushless)
 
-
       self.backLeftDrive = rev.CANSparkMax(2, rev.CANSparkMax.MotorType.kBrushless)
       self.backRightDrive = rev.CANSparkMax(8, rev.CANSparkMax.MotorType.kBrushless)
       self.frontLeftDrive = rev.CANSparkMax(4, rev.CANSparkMax.MotorType.kBrushless)
@@ -60,9 +59,23 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      Kp = 1.5
+      Kp = 0.001  # if this dosent do anything increase it the next power ex 0.01 -> 0.1
       Ki = 0
       Kd = 0
+      """
+      How to tune this p.i.d:
+      first zero the Ki and Kd then increase the Kp until the values oscillate or hit a peak constantly
+      then lower the Kp until just before it oscillates 
+      
+      the Kd should start at 10x the kp the Kds purpose should be to make sure the Kp dosent over shoot then go back to where its supposed to go
+      this helps with accuracy and makes it so it dosent drift
+      
+      PLEASE DO NOT CHANGE THE I
+      
+      
+   
+      """
+
       self.BleftPID = controller.PIDController(Kp, Ki, Kd)
       self.BleftPID.enableContinuousInput(-math.pi, math.pi)
       self.BleftPID.setSetpoint(0.0)
@@ -79,7 +92,6 @@ class DriveTrain():
       self.gyro = navx.AHRS.create_i2c(wpilib.I2C.Port(0))
       self.gyro.enableLogging(True)
 
-
       frontrightlocation = Translation2d(.381, .381)
       frontleftlocation = Translation2d(.381, -.381)
       backleftlocation = Translation2d(-.381, -.381)
@@ -92,7 +104,7 @@ class DriveTrain():
       self.odometry = SwerveDrive4Odometry(
          self.kinematics,
          wpimath.geometry.Rotation2d(self.gyro.getYaw())
-        # wpimath.geometry.Rotation2d(0.0)
+         # wpimath.geometry.Rotation2d(0.0)
          ,
          (
             getSwerveModPos(self.FrightEnc, self.frontRightDriveEnc),
@@ -101,7 +113,6 @@ class DriveTrain():
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
          )
       )
-
 
       print("end of init")
 
@@ -115,14 +126,13 @@ class DriveTrain():
       # This will flip the path being followed to the red side of the field.
       # THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-     # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
+   # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
    def getChassisSpeed(self) -> ChassisSpeeds:
       print(f"{self.lastChassisSpeed=}")
       return self.lastChassisSpeed
 
    def updateOdometry(self) -> None:
-
       self.odometry.update(
          wpimath.geometry.Rotation2d(self.gyro.getYaw())
          ,
@@ -165,9 +175,9 @@ class DriveTrain():
       self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value,
                                                          lratio(backLeftOptimized.angle.radians())))
       self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value,
-                                                          lratio(frontLeftOptimized.angle.radians())))
+                                                         lratio(frontLeftOptimized.angle.radians())))
       self.backRightRotation.set(self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value,
-                                                           lratio(backRightOptimized.angle.radians())))
+                                                          lratio(backRightOptimized.angle.radians())))
       self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,
                                                             lratio(frontRightOptimized.angle.radians())))
 
@@ -177,5 +187,3 @@ class DriveTrain():
       self.frontRightDrive.set(frontRightOptimized.speed)
 
       self.updateOdometry()
-
-
