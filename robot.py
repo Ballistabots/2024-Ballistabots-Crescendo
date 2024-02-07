@@ -10,8 +10,12 @@ from robotcontainer import RobotContainer
 
 
 class MyRobot(wpilib.TimedRobot):
+   def disabledPeriodic(self):
+      #self.drivetrain.gyro.zeroYaw()
+      pass
 
    def robotInit(self):
+      self.joystick = wpilib.Joystick(0)
       """
       This function is called upon program startup and
       should be used for any initialization code.
@@ -50,7 +54,7 @@ class MyRobot(wpilib.TimedRobot):
 
 
 
-      self.joystick = wpilib.Joystick(0)
+
 
       xspeed = self.joystick.getX()
       yspeed = self.joystick.getY()
@@ -87,11 +91,12 @@ class MyRobot(wpilib.TimedRobot):
          #field centric
          #speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(self.drivetrain.gyro.getRoll()))
          #robot centric
-         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * 0.2, xspeed * 0.2, tspeed * 0.2, Rotation2d(heading))
+         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * self.slow, xspeed * self.slow, tspeed, Rotation2d(heading))
          print(heading)
          self.drivetrain.driveFromChassisSpeeds(speeds)
 
-
+   def robotPeriodic(self):
+      self.slow = -self.joystick.getThrottle()
 
 if __name__ == "__main__":
    wpilib.run(MyRobot)

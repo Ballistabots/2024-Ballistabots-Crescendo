@@ -60,9 +60,23 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      Kp = 1.5
+      Kp = 0.001#if this dosent do anything increase it the next power ex 0.01 -> 0.1
       Ki = 0
       Kd = 0
+      """
+      How to tune this p.i.d:
+      first zero the Ki and Kd then increase the Kp until the values oscillate or hit a peak constantly
+      then lower the Kp until just before it oscillates 
+      
+      the Kd should start at 10x the kp the Kds purpose should be to make sure the Kp dosent over shoot then go back to where its supposed to go
+      this helps with accuracy and makes it so it dosent drift
+      
+      PLEASE DO NOT CHANGE THE I
+      
+      
+   
+      """
+
       self.BleftPID = controller.PIDController(Kp, Ki, Kd)
       self.BleftPID.enableContinuousInput(-math.pi, math.pi)
       self.BleftPID.setSetpoint(0.0)
