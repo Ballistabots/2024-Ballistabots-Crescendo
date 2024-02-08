@@ -1,54 +1,102 @@
-import rev as Rev
+import math
+
 import wpilib
 import wpilib.drive
-from phoenix6.hardware.core.core_talon_fx import CoreTalonFX
+import wpilib.drive
+from wpimath.geometry import Rotation2d
+from wpimath.kinematics import ChassisSpeeds
+
+from robotcontainer import RobotContainer
 
 
 class MyRobot(wpilib.TimedRobot):
-   # nothinng
-   # print("nothing please leave me alone this is nothing im not crazy, crazy? i was crazy once, they locked me in a room, a rubber room. a rubber room with rats. RATS? rats make me crazy, crazy?")
-   def robotPeriodic(self):
+   def disabledPeriodic(self):
+      #self.drivetrain.gyro.zeroYaw()
       pass
 
-
-   def robotInit(self) -> None:
-      self.frontLeft = Rev.CANSparkMax(7, Rev.CANSparkMax.MotorType.kBrushless)
-      self.frontRight = Rev.CANSparkMax(5, Rev.CANSparkMax.MotorType.kBrushless)
-      self.backLeft = Rev.CANSparkMax(1, Rev.CANSparkMax.MotorType.kBrushless)
-      self.backRight = Rev.CANSparkMax(6, Rev.CANSparkMax.MotorType.kBrushless)
-
-
-      self.outake = CoreTalonFX(1,'rio')
-      self.intake = Rev.CANSparkMax(2, Rev.CANSparkMax.MotorType.kBrushless)
-      self.belt = Rev.CANSparkMax(3,Rev.CANSparkMax.MotorType.kBrushless)
-
-      self.slow = 0.5
-
-      self.frontRight.setInverted(True)
-
-      self.backRight.setInverted(True)
+   def robotInit(self):
+      self.joystick = wpilib.Joystick(0)
+      """
+      This function is called upon program startup and
+      should be used for any initialization code.
+      """
+      self.robotContainer = RobotContainer()
+      self.drivetrain = self.robotContainer.drivetrain
 
 
 
-      self.robotDrive = wpilib.drive.MecanumDrive(self.frontLeft, self.backLeft, self.frontRight,self.backRight)
-      self.driver = wpilib.Joystick(0)
+   def autonomousInit(self):
+      """This function is run once each time the robot enters autonomous mode."""
+      pass
+
+   def autonomousPeriodic(self):
+      pass
+      """This function is called periodically during autonomous."""
+      """pathfindingCommand = AutoBuilder.pathfindToPose(
+      targetPose,
+      constraints,
+      goal_end_vel=0.0, # Goal end velocity in meters/sec
+      rotation_delay_distance=0.0 # Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
+      )"""
+
+   def teleopInit(self):
+      """This function is called once each time the robot enters teleoperated mode."""
+
+      #self.drivetrain.gyro.set_yaw(0)
+
+      """self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value, 5.0))
+      self.frontLeftRotation.set(-self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value, 5.0))
+      self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value, 5.0))
+      self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value, 5.0))"""
 
    def teleopPeriodic(self):
-      self.robotDrive.driveCartesian(
-         -self.driver.getY() * self.slow,
-         -self.driver.getX() * self.slow,
-         -self.driver.getZ() * self.slow,
-      )
-      if self.driver.getTrigger():
-         self.intake.setVoltage(-30)
-         self.belt.setVoltage(30)
-      else:
-         self.intake.setVoltage(0)
-         self.belt.setVoltage(0)
+      """This function is called periodically during teleoperated mode."""
 
-      if self.driver.getThrottle() > .30:
-          #figure this out please !!!!! self.outake.
-          print("shot")
+
+
+
+
+      xspeed = self.joystick.getX()
+      yspeed = self.joystick.getY()
+      tspeed = self.joystick.getTwist()
+
+      yaw = -self.drivetrain.gyro.getYaw()
+
+      h = yaw % 360
+      if h < 0:
+         h += 360
+
+      h2 = h / 360
+
+      heading = h2 * (math.pi * 2)
+
+      if abs(xspeed) < .15:
+         xspeed = 0
+      if abs(yspeed) < .15:
+         yspeed = 0
+      if abs(tspeed) < .15:
+         tspeed = 0
+
+      if xspeed == 0 and yspeed == 0 and tspeed == 0:  # xspeed == 0 and yspeed == 0 and tspeed == 0:
+         self.drivetrain.frontLeftDrive.set(0)
+         self.drivetrain.backRightDrive.set(0)
+         self.drivetrain.backLeftDrive.set(0)
+         self.drivetrain.frontRightDrive.set(0)
+
+         self.drivetrain.backLeftRotation.set(0)
+         self.drivetrain.backRightRotation.set(0)
+         self.drivetrain.frontLeftRotation.set(0)
+         self.drivetrain.frontRightRotation.set(0)
+      else:
+         #field centric
+         #speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(self.drivetrain.gyro.getRoll()))
+         #robot centric
+         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * self.slow, xspeed * self.slow, tspeed, Rotation2d(heading))
+         print(heading)
+         self.drivetrain.driveFromChassisSpeeds(speeds)
+
+   def robotPeriodic(self):
+      self.slow = -self.joystick.getThrottle()
 
 if __name__ == "__main__":
-    wpilib.run(MyRobot)
+   wpilib.run(MyRobot)
