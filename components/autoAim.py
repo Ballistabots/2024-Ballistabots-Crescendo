@@ -15,6 +15,8 @@ class AutoAim():
 
       pass
 
+   print("nnothign")
+
    def getDistanceFromTag(self,tagId:int) -> float:
       """Returns the estimated distance from the april tag"""
       tagSize = self.Eyes.GetTagSize(tagId)
