@@ -1,12 +1,13 @@
-import phoenix6
 import phoenix5
 import wpilib
-import wpimath
-import rev
 import math
 from wpimath import controller
+import math
 
-from robotcontainer import RobotContainer
+import phoenix5
+import wpilib
+from wpimath import controller
+
 
 class Arm():
 
@@ -19,7 +20,7 @@ class Arm():
 
       self.armPID = controller.PIDController(self.Kp, self.Ki, self.Kd)
       self.armPID.enableContinuousInput(-math.pi, math.pi)
-      self.armPID.setSetpoint(0,0)
+      self.armPID.setSetpoint(0)
 
       if self.driver.getRawButtonPressed(5):
          self.arm.set(phoenix5.TalonFXControlMode.PercentOutput, 0.5)
