@@ -1,4 +1,3 @@
-import photonlibpy
 import photonlibpy.photonCamera
 import wpilib.shuffleboard
 
@@ -101,3 +100,7 @@ class Vison:
 
    def getResults(self):
       return self.camera.getLatestResult()
+
+import photonlibpy
+import photonlibpy.photonCamera
+import wpilib.shuffleboard
