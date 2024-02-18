@@ -17,7 +17,7 @@ class RobotContainer:
       self.physics = Physics()
       self.StateHandler = StateHandler()
       #self.hanger = Hanger()
-      #self.shooter = shooter()
+      self.shooter = shooter()
       #self.arm = Arm
 
 
