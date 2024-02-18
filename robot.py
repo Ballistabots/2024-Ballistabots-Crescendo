@@ -26,7 +26,8 @@ class MyRobot(wpilib.TimedRobot):
 
    def __init__(self):
       super().__init__()
-      self.joystick = wpilib.Joystick(0)
+      self.driver1 = wpilib.Joystick(0)
+      self.driver2 = wpilib.Joystick(1)
       # self.joystickPS5 = wpilib.PS5Controller(0)
       board = wpilib.shuffleboard.Shuffleboard
       self.state = State('Disabled')
@@ -40,10 +41,11 @@ class MyRobot(wpilib.TimedRobot):
       This function is called upon program startup and
       should be used for any initialization code.
       """
-      # self.camera = photonlibpy.photonCamera.PhotonCamera("Camera1")
+      # self.camera1 = photonlibpy.photonCamera.PhotonCamera("Camera1")
 
       self.robotContainer = RobotContainer()
       self.drivetrain = self.robotContainer.drivetrain
+      self.shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -67,61 +69,27 @@ class MyRobot(wpilib.TimedRobot):
 
    def autonomousPeriodic(self):
       pass
-      """This function is called periodically during autonomous."""
-      """pathfindingCommand = AutoBuilder.pathfindToPose(
-      targetPose,
-      constraints,
-      goal_end_vel=0.0, # Goal end velocity in meters/sec
-      rotation_delay_distance=0.0 # Rotation delay distance in meters. This is how far the robot should travel before attempting to rotate.
-      )"""
 
    def teleopInit(self):
       """This function is called once each time the robot enters teleoperated mode."""
 
-      # self.drivetrain.gyro.set_yaw(0)
-
-      # self.BleftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value, 5.0))
-      # self.FleftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value, 5.0))
-      # self.BrightRotation.set(self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value, 5.0))
-      # self.FrightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value, 5.0))
-
       # self.drivetrain.gyro.zeroYaw()  # remove this after testing
-      self.slow = 0.3
+      self.slow = 0.3  # slows down the robots max speed
 
    def teleopPeriodic(self):
       """This function is called periodically during teleoperated mode."""
       self.robotContainer.StateHandler.match_state(self.state.getState())
 
-      # result = self.camera.getLatestResult()
+      xspeed = self.driver1.getX()
+      yspeed = self.driver1.getY()
+      tspeed = self.driver1.getZ()
 
-      # id = result.getTargets()
-
-      # for target in id:
-
-      # wpilib.SmartDashboard.putNumber("ID",target.getFiducialId())
-      # wpilib.SmartDashboard.putNumber("YAW",target.getYaw())
-      # wpilib.SmartDashboard.putNumber("AREA",target.getArea())
-
-      # wpilib.SmartDashboard.putString("Area On the Field", self.robotContainer.vision.aprilTags[target.getFiducialId()])
-
-      xspeed = self.joystick.getX()
-      yspeed = self.joystick.getY()
-      tspeed = self.joystick.getZ()
-
-      # yaw = -self.drivetrain.gyro.getRawGyroY()
       yaw = -self.drivetrain.gyro.getYaw()
 
-      if self.joystick.getRawButtonPressed(2):
+      if self.driver1.getRawButtonPressed(2):
          self.drivetrain.gyro.zeroYaw()
 
-      # if self.joystick.getRawButtonPressed(1):
-
-      #  self.state.changeState("Aligning")
-      # self.drivetrain.align(self.robotContainer.vision.getTagOdometry(10 or 11))  # aligns the robot with april tag
-      # getting shooting angle goes here
-      # self.robotContainer.auto_aim.Aim()  # aims the arm and gets ready to shoot
-
-      h = yaw % 360
+      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
       if h < 0:
          h += 360
 
@@ -129,14 +97,14 @@ class MyRobot(wpilib.TimedRobot):
 
       heading = h2 * (math.pi * 2)
 
-      if abs(xspeed) < .15:
+      if abs(xspeed) < .15:  # applies  a deadzone to the joystick
          xspeed = 0
       if abs(yspeed) < .15:
          yspeed = 0
       if abs(tspeed) < .15:
          tspeed = 0
 
-      if xspeed == 0 and yspeed == 0 and tspeed == 0:  # xspeed == 0 and yspeed == 0 and tspeed == 0:
+      if xspeed == 0 and yspeed == 0 and tspeed == 0:  # if no speed is given to the motors there will be no power in any of the motors
          self.drivetrain.frontLeftDrive.set(0)
          self.drivetrain.backRightDrive.set(0)
          self.drivetrain.backLeftDrive.set(0)
@@ -146,28 +114,27 @@ class MyRobot(wpilib.TimedRobot):
          self.drivetrain.backRightRotation.set(0)
          self.drivetrain.frontLeftRotation.set(0)
          self.drivetrain.frontRightRotation.set(0)
-      else:
-         if self.state.getState() == "Shooting":
-            self.state.changeState("Shooting_Driving")
-            pass
-         elif self.state.getState() == "Aiming":
-            self.state.changeState("Aiming_Driving")
-
-         else:
-            self.state.changeState("Driving")
 
          # speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(0.0))
 
-         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * self.slow, xspeed * self.slow, -tspeed,
-                                                        Rotation2d(heading))
+         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * self.slow, xspeed * self.slow, -tspeed, Rotation2d(
+            heading))  # calculates power given to the motors depending on the user inputs
          self.drivetrain.driveFromChassisSpeeds(speeds)
          # print(heading)
 
+   def testInit(self):
+      #on test init
+      pass
 
+   def testPeriodic(self):
+      #loops while the test is enabled
+      self.shooter.Outtake(self.driver2.getY())
 
    def robotPeriodic(self):
+      #while the robot is on
       pass
 
 
 if __name__ == "__main__":
+   #is able to run the robot as an executable rather than a regular file
    wpilib.run(MyRobot)

@@ -1,4 +1,3 @@
-
 import navx
 import phoenix6
 import rev
@@ -17,7 +16,7 @@ class shooter():
 
       self.ShooterGyro = navx.AHRS.create_i2c(wpilib.I2C.Port(0))
 
-   def Intake(self, button:bool, toggle:bool = False) -> None:
+   def Intake(self, button: bool, toggle: bool = False) -> None:
       if toggle:
          self.Intake.set(1.0)
       else:
@@ -28,17 +27,14 @@ class shooter():
 
    def Outtake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(velocity))
-      self.Outtake2.set_control(phoenix6.controls.Follower(15,True))
-
+      self.Outtake2.set_control(phoenix6.controls.Follower(15, True))
 
    def OuttakeButIntake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(-velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, True))
 
-
    def ShooterGyroOdo(self) -> tuple:
       """
-
       used to find the position of the shooter
       :return: tuple of yaw, pitch and angle in that order
       """

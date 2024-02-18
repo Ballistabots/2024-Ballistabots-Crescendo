@@ -28,18 +28,18 @@ class Hanger():
       # The output of GetRawButton is true/false depending on whether
          # the button is pressed; Set takes a boolean for whether
          # to retract the solenoid (false) or extend it (true).
-         self.solenoid.set(self.joystick.getRawButton(6))
+         self.solenoid.set(self.driver1.getRawButton(6))
 
          # GetRawButtonPressed will only return true once per press.
          # If a button is pressed, set the solenoid to the respective channel.
 
-         if self.joystick.getRawButtonPressed(11):
+         if self.driver1.getRawButtonPressed(11):
             self.doubleSolenoid.set(wpilib.DoubleSolenoid.Value.kForward)
-         elif self.joystick.getRawButtonPressed(12):
+         elif self.driver1.getRawButtonPressed(12):
             self.doubleSolenoid.set(wpilib.DoubleSolenoid.Value.kReverse)
 
          # On button press, toggle the compressor.
-         if self.joystick.getRawButtonPressed(self.kCompressorButton):
+         if self.driver1.getRawButtonPressed(self.kCompressorButton):
             # Check whether the compressor is currently enabled.
             isCompressorEnabled = self.compressor.isEnabled()
             if isCompressorEnabled:
@@ -102,18 +102,18 @@ class Hanger():
       # The output of GetRawButton is true/false depending on whether
          # the button is pressed; Set takes a boolean for whether
          # to retract the solenoid (false) or extend it (true).
-         self.solenoid.set(self.joystick.getRawButton(6))
+         self.solenoid.set(self.driver1.getRawButton(6))
 
          # GetRawButtonPressed will only return true once per press.
          # If a button is pressed, set the solenoid to the respective channel.
 
-         if self.joystick.getRawButtonPressed(11):
+         if self.driver1.getRawButtonPressed(11):
             self.doubleSolenoid.set(wpilib.DoubleSolenoid.Value.kForward)
-         elif self.joystick.getRawButtonPressed(12):
+         elif self.driver1.getRawButtonPressed(12):
             self.doubleSolenoid.set(wpilib.DoubleSolenoid.Value.kReverse)
 
          # On button press, toggle the compressor.
-         if self.joystick.getRawButtonPressed(self.kCompressorButton):
+         if self.driver1.getRawButtonPressed(self.kCompressorButton):
             # Check whether the compressor is currently enabled.
             isCompressorEnabled = self.compressor.isEnabled()
             if isCompressorEnabled:

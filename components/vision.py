@@ -1,14 +1,19 @@
+import math
+
 import photonlibpy.photonCamera
-import wpilib.shuffleboard
 
 
 class Vison:
    def __init__(self):
+      self.camera1 = photonlibpy.photonCamera.PhotonCamera(
+         "Camera1")  # initializes a camera using the photonlib library
 
-      self.camera = photonlibpy.photonCamera.PhotonCamera("Camera1")  # change this string into the actuall camera name
-      self.board = wpilib.shuffleboard.Shuffleboard
+      self.CAMERA1_CAMERA_HEIGHT = 0  # in meters. height the camera is at
+      self.CAMERA1_PITCH = 0  # in rads. where the camera is pointing
 
-      self.aprilTags = (0,
+      self.TARGET_HEIGHT = 4.49  # height of the apriltag target in meters
+
+      self.aprilTags = (0,  # large array full of apriltag names for quick access
                         "Blue Source Right",
                         "Blue Source Left",
                         "Red Speaker Right",
@@ -25,82 +30,31 @@ class Vison:
                         "Blue Stage Left",
                         "Blue Stage Middle",
                         "Blue Stage Right"
-      )
+                        )
 
-      """
-      result = self.camera.getLatestResult()  # gets the results of the camera
-      hasTargets = result.hasTargets()  # checks for if the camera has targets
-      targets = result.getTargets()
-      target = targets[0]  # firsts target in list of targets is set as the main target
-      yaw = target.getYaw()
-      pitch = target.getPitch()
-      area = target.getArea()
-      skew = target.getSkew()
-      corners = target.getDetectedCorners()
-
-      targetID = target.getFiducialId()  # gets info from the target
-      poseAmbiguity = target.getPoseAmbiguity()
-      bestCameraToTarget = target.getBestCameraToTarget()
-      alternateCameraToTarget = target.getAlternateCameraToTarget()
-
-      self.camera.setDriverMode(True)  # allows the driver to use the camera
+   def getResults(self) -> photonlibpy.photonCamera.PhotonPipelineResult:
       """
 
-      self.result = self.camera.getLatestResult()  # gets the results of the camera
-      self.hasTargets = self.result.hasTargets()  # checks for if the camera has targets
-      self.targets = self.result.getTargets()
-      #self.target = self.targets[None]  # firsts target in list of targets is set as the main target
+      :return: results given by the camera as a object to be used for data parsing
+      """
+      return self.camera1.getLatestResult()
 
-   def getFeed(self) -> None:
-      pass
+   def PitchToRads(self, pitch: float) -> float:
+      """
 
-   def isDetecting(self, id: int) -> bool:
-      if len(self.targets) <= 0:
-         pass
-      for i in self.targets:
-         if i == id:
-            return True
-      return False
+      :param pitch: input of pitch to be turned into radians
+      :return: radians
+      """
+      return pitch * (math.pi / 180)
 
-   def getTagOdometry(self, id: int) -> tuple:
+   def GetDistanceFromBestTag(self, cameraHeightMeters: float, targetHeightMeters: float, cameraPitchRadians: float,
+                              targetPitchRadians: float) -> float:
+      """
 
-      if len(self.targets) <= 0:
-         pass
-      for i in self.targets:
-         if i == id:
-            return (i.getYaw(), i.getPitch(), i.getSkew())
-
-   def getAllTags(self) -> tuple:
-      if len(self.targets) <= 0 :
-         pass
-      listId = ()
-      for i in self.targets:
-         listId += i.getFiducialId()
-      return listId
-
-   def EnableDriverViewing(self, Enable: bool) -> None:
-      if len(self.targets) <= 0 :
-         pass
-      self.camera.setDriverMode(Enable)
-      pass
-
-   def VideoTelemetry(self) -> None:
-      if len(self.targets) <= 0 :
-         pass
-      self.board.addEventMarker("Tags", f"{self.getAllTags()}", wpilib.shuffleboard.ShuffleboardEventImportance.kHigh)
-      pass
-
-   def GetTagSize(self, id: int) -> float:
-      if len(self.targets) <= 0 :
-         pass
-      for i in self.targets:
-         if i.getFiducialId() == id:
-            return i.getArea()
-      return 10000
-
-   def getResults(self):
-      return self.camera.getLatestResult()
-
-import photonlibpy
-import photonlibpy.photonCamera
-import wpilib.shuffleboard
+      :param cameraHeightMeters: Height of the camera in meters
+      :param targetHeightMeters: Height of the wanted target in meters
+      :param cameraPitchRadians: The Pitch in which the camera is facing
+      :param targetPitchRadians: Input given by the camera by parsing and using the pitch method
+      :return: Distance in meters from the target
+      """
+      return (targetHeightMeters - cameraHeightMeters) / math.tan(cameraPitchRadians + targetPitchRadians)
