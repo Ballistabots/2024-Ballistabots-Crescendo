@@ -86,9 +86,9 @@ class DriveTrain():
 
       # Drive Wheels Pid
 
-      DriveKp = 0.01
+      DriveKp = 1.5
       DriveKi = 0
-      DriveKd = 0
+      DriveKd = 0.15
 
       self.FrontRightDrivePID = controller.ProfiledPIDController(DriveKp, DriveKi, DriveKd,
                                                                  wpimath.trajectory.TrapezoidProfile.Constraints(3, 10))

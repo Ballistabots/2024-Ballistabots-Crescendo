@@ -6,15 +6,15 @@ import robotcontainer
 class Arm():
 
    def __init__(self):
-      self.Arm1 = phoenix6.hardware.TalonFX(34, "rio")
-      self.Arm2 = phoenix6.hardware.TalonFX(35, "rio")
+      self.Arm1 = phoenix6.hardware.TalonFX(17, "rio")
+      self.Arm2 = phoenix6.hardware.TalonFX(18, "rio")
 
-      self.Arm1follower = phoenix6.controls.Follower(34, True)
+      self.Arm1follower = phoenix6.controls.Follower(17, True)
 
       self.position_request = phoenix6.controls.PositionVoltage(0)
 
       cfg = phoenix6.configs.TalonFXConfiguration()
-    # Set PID gains
+    #Set PID gains
       cfg.slot0.k_p = 0.01  # tune these
       cfg.slot0.k_d = 0
 
