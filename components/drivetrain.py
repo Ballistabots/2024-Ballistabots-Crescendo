@@ -4,7 +4,7 @@ import math
 # from wpilib import DriverStation
 import navx
 import phoenix6 as ctre
-import photonlibpy.photonCamera
+
 import rev
 import wpilib
 import wpimath
@@ -15,6 +15,7 @@ from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModuleState, Chassi
    SwerveModulePosition
 
 import robotcontainer
+import commands2
 
 
 def lratio(angle):
@@ -44,7 +45,7 @@ class DriveTrain():
 
       self.robotContainer = robotcontainer
 
-      self.camera = photonlibpy.photonCamera.PhotonCamera("Camera1")
+
 
       self.backLeftRotation = rev.CANSparkMax(1, rev.CANSparkMax.MotorType.kBrushless)
       self.backRightRotation = rev.CANSparkMax(8, rev.CANSparkMax.MotorType.kBrushless)
@@ -68,9 +69,9 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      RotKp = 1.35  #
+      RotKp = 2.5 # 1.35
       RotKi = 0
-      RotKd = 0
+      RotKd = 0.25
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
       self.BleftPID.enableContinuousInput(-math.pi, math.pi)
       self.BleftPID.setSetpoint(0.0)
@@ -104,7 +105,10 @@ class DriveTrain():
 
       self.gyro = navx.AHRS.create_i2c(wpilib.I2C.Port.kMXP)
 
+
       self.gyro.enableLogging(True)
+
+
 
       frontrightlocation = Translation2d(.381, .381)
       frontleftlocation = Translation2d(.381, -.381)
@@ -117,7 +121,7 @@ class DriveTrain():
 
       self.odometry = SwerveDrive4Odometry(
          self.kinematics,
-         wpimath.geometry.Rotation2d(self.gyro.getYaw())
+         wpimath.geometry.Rotation2d(self.gyro.getAngle())
          # wpimath.geometry.Rotation2d(0.0)
          ,
          (
@@ -126,7 +130,7 @@ class DriveTrain():
             getSwerveModPos(self.BrightEnc, self.backRightDriveEnc),
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
          ),
-         Pose2d(5.0, 13.0, Rotation2d(0))
+         #Pose2d(5.0, 13.0, Rotation2d(0))
          # starting pose 5 meters against the wall 13.5 from the driver station and a heading of 0
       )
 
@@ -136,6 +140,8 @@ class DriveTrain():
       print("getAutocommand")
       # Load the path you want to follow using its name in the GUI
 
+   def getPose(self):
+      return self.odometry.getPose()
    def shouldFlipPath(self):
       pass
       # Boolean supplier that controls when the path will be mirrored for the red alliance
@@ -290,30 +296,45 @@ class DriveTrain():
       else:
          return (drive_voltage, steer_angle)
 
+
+   def setSwivel(self,desiredState:wpimath.kinematics.ChassisSpeeds) -> None:
+      """
+       SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
+        frontLeft.setDesiredState(desiredStates[0]);
+        frontRight.setDesiredState(desiredStates[1]);
+        backLeft.setDesiredState(desiredStates[2]);
+        backRight.setDesiredState(desiredStates[3]);
+      :return:
+      """
+
+      self.states = wpimath.kinematics.SwerveDrive4Kinematics
+      self.states.toSwerveModuleStates()
+
+
    def driveFromChassisSpeeds(self, speeds: ChassisSpeeds) -> None:
       self.lastChassisSpeed = speeds
       frontLeft, frontRight, backLeft, backRight = self.kinematics.toSwerveModuleStates(speeds)
 
       frontLeftOptimized = SwerveModuleState.optimize(frontLeft,
                                                       Rotation2d(
-                                                         ticks2rad(self.FleftEnc.get_absolute_position()._value)))
+                                                         ticks2rad(self.FleftEnc.get_absolute_position().value_as_double)))
       frontRightOptimized = SwerveModuleState.optimize(frontRight,
                                                        Rotation2d(
-                                                          ticks2rad(self.FrightEnc.get_absolute_position()._value)))
+                                                          ticks2rad(self.FrightEnc.get_absolute_position().value_as_double)))
       backLeftOptimized = SwerveModuleState.optimize(backLeft,
                                                      Rotation2d(
-                                                        ticks2rad(self.BleftEnc.get_absolute_position()._value)))
+                                                        ticks2rad(self.BleftEnc.get_absolute_position().value_as_double)))
       backRightOptimized = SwerveModuleState.optimize(backRight,
                                                       Rotation2d(
-                                                         ticks2rad(self.BrightEnc.get_absolute_position()._value)))
+                                                         ticks2rad(self.BrightEnc.get_absolute_position().value_as_double)))
 
-      self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value,
+      self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position().value_as_double,
                                                          lratio(backLeftOptimized.angle.radians())))
-      self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value,
+      self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position().value_as_double,
                                                          lratio(frontLeftOptimized.angle.radians())))
-      self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value,
+      self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position().value_as_double,
                                                            lratio(backRightOptimized.angle.radians())))
-      self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,
+      self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position().value_as_double,
                                                             lratio(frontRightOptimized.angle.radians())))
 
       self.backLeftDrive.set(-backLeftOptimized.speed)
@@ -323,27 +344,3 @@ class DriveTrain():
 
       self.updateOdometry()
 
-   def AutoAlign(self):
-      self.vision = self.robotContainer.Vison
-      self.TurnSwivelPos()
-      while True:  # pid loop
-         if wpilib.Joystick(0).getRawButtonPressed(
-                 5):  # so the driver can escape the loop incase of enemy defense or other things
-            break
-         result = self.camera.getLatestResult()
-
-         id = result.getTargets()
-
-         for target in id:
-            yaw = target.getYaw()
-            area = target.getArea()
-            pitch = target.getPitch()
-
-            self.frontLeftDrive.set(self.FrontLeftDrivePID.calculate(yaw, 0))
-            self.frontRightDrive.set(self.FrontRightDrivePID.calculate(yaw, 0))
-            self.backLeftDrive.set(self.BackLeftDrivePID.calculate(yaw, 0))
-            self.backRightDrive.set(self.BackRightDrivePID.calculate(yaw, 0))
-
-         if (self.FrontLeftDrivePID.atSetpoint() and self.FrontRightDrivePID.atSetpoint() and
-            self.BackLeftDrivePID.atSetpoint() and self.BackRightDrivePID.atSetpoint()):
-            break

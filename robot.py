@@ -45,7 +45,7 @@ class MyRobot(wpilib.TimedRobot):
 
       self.robotContainer = RobotContainer()
       self.drivetrain = self.robotContainer.drivetrain
-      self.shooter = self.robotContainer.shooter
+      self.path_test = self.robotContainer.path_test
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -64,30 +64,54 @@ class MyRobot(wpilib.TimedRobot):
 
    def autonomousInit(self):
       """This function is run once each time the robot enters autonomous mode."""
-      # self.drivetrain.gyro.zeroYaw()
-      pass
+
+      self.field = wpilib.Field2d()
+      self.field.getObject("traj").setTrajectory(self.path_test.trajectory)  # sets the trajectory
+
+      self.timer = wpilib.Timer()
+      self.timer.start()
 
    def autonomousPeriodic(self):
-      pass
+      self.drivetrain.updateOdometry()
+
+      # Update robot position on Field2d.
+      self.field.setRobotPose(self.drivetrain.getPose())
+
+      if self.timer.get() < self.path_test.trajectory.totalTime():
+         # Get the desired pose from the trajectory.
+         desiredPose = self.path_test.trajectory.sample(self.timer.get())
+
+         # Get the reference chassis speeds from the Ramsete controller.
+         refChassisSpeeds = self.path_test.ramseteController.calculate(
+            self.drivetrain.getPose(), desiredPose
+         )
+         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(refChassisSpeeds.vx, refChassisSpeeds.vy,
+                                                        refChassisSpeeds.omega, Rotation2d(
+               self.drivetrain.gyro.getAngle()))  # calculates power given to the motors depending on the user inputs
+
+         self.drivetrain.driveFromChassisSpeeds(speeds)
 
    def teleopInit(self):
       """This function is called once each time the robot enters teleoperated mode."""
 
       # self.drivetrain.gyro.zeroYaw()  # remove this after testing
-      self.slow = 0.3  # slows down the robots max speed
+      self.slow = 0.7  # slows down the robots max speed
 
    def teleopPeriodic(self):
       """This function is called periodically during teleoperated mode."""
-      self.robotContainer.StateHandler.match_state(self.state.getState())
-
       xspeed = self.driver1.getX()
       yspeed = self.driver1.getY()
-      tspeed = self.driver1.getZ()
 
-      yaw = -self.drivetrain.gyro.getYaw()
+      # yaw = -self.drivetrain.gyro.getYaw()
+      yaw = -self.drivetrain.gyro.getAngle()
 
       if self.driver1.getRawButtonPressed(2):
          self.drivetrain.gyro.zeroYaw()
+
+      if self.driver1.getTrigger():
+         tspeed = self.driver1.getZ()
+      else:
+         tspeed = 0
 
       h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
       if h < 0:
@@ -97,9 +121,9 @@ class MyRobot(wpilib.TimedRobot):
 
       heading = h2 * (math.pi * 2)
 
-      if abs(xspeed) < .15:  # applies  a deadzone to the joystick
+      if abs(xspeed) < .2:  # applies  a deadzone to the joystick
          xspeed = 0
-      if abs(yspeed) < .15:
+      if abs(yspeed) < .2:
          yspeed = 0
       if abs(tspeed) < .15:
          tspeed = 0
@@ -115,28 +139,26 @@ class MyRobot(wpilib.TimedRobot):
          self.drivetrain.frontLeftRotation.set(0)
          self.drivetrain.frontRightRotation.set(0)
 
-         # speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(0.0))
+      # speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(0.0))
 
-         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(-yspeed * self.slow, xspeed * self.slow, -tspeed, Rotation2d(
-            heading))  # calculates power given to the motors depending on the user inputs
-         self.drivetrain.driveFromChassisSpeeds(speeds)
-         # print(heading)
+      speeds = ChassisSpeeds.fromRobotRelativeSpeeds(yspeed * self.slow, -xspeed * self.slow, -tspeed, Rotation2d(
+         heading))  # calculates power given to the motors depending on the user inputs
+      self.drivetrain.driveFromChassisSpeeds(speeds)
 
-
+      # print(heading)
 
    def testInit(self):
-      #on test init
+      # on test init
       pass
 
    def testPeriodic(self):
-      #loops while the test is enabled
-      self.shooter.Outtake(self.driver2.getY())
+      pass
 
    def robotPeriodic(self):
-      #while the robot is on
+      # while the robot is on
       pass
 
 
 if __name__ == "__main__":
-   #is able to run the robot as an executable rather than a regular file
+   # is able to run the robot as an executable rather than a regular file
    wpilib.run(MyRobot)

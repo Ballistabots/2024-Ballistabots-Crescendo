@@ -10,6 +10,8 @@ class shooter():
       self.Outtake1 = phoenix6.hardware.TalonFX(15, "rio")  # falcon500
       self.Outtake2 = phoenix6.hardware.TalonFX(16, "rio")
 
+      self.Indxer = rev.CANSparkMax(14, rev.CANSparkMax.MotorType.kBrushed)
+
       self.control = phoenix6.controls.DutyCycleOut(0)
 
       self.Intake = rev.CANSparkMax(17, rev.CANSparkMax.MotorType.kBrushless)
@@ -19,19 +21,24 @@ class shooter():
    def Intake(self, button: bool, toggle: bool = False) -> None:
       if toggle:
          self.Intake.set(1.0)
+
       else:
          if button:
             self.Intake.set(1.0)
+
          else:
             self.Intake.set(0.0)
+
 
    def Outtake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, True))
+      self.Indxer.set(velocity)
 
    def OuttakeButIntake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(-velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, True))
+      self.Indxer.set(-velocity)
 
    def ShooterGyroOdo(self) -> tuple:
       """
