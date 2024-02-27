@@ -65,9 +65,9 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      RotKp = 2.5  # 1.35
+      RotKp = 2.5  # 1.35 ETHIS AISJD IHA ONE DONT DO THE OTHER ONE
       RotKi = 0
-      RotKd = 0.25
+      RotKd = 0.5
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
       self.BleftPID.enableContinuousInput(-math.pi, math.pi)
       self.BleftPID.setSetpoint(0.0)
