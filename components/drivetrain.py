@@ -1,10 +1,8 @@
-
 import math
 
 # from wpilib import DriverStation
 import navx
 import phoenix6 as ctre
-
 import rev
 import wpilib
 import wpimath
@@ -15,7 +13,6 @@ from wpimath.kinematics import SwerveDrive4Kinematics, SwerveModuleState, Chassi
    SwerveModulePosition
 
 import robotcontainer
-import commands2
 
 
 def lratio(angle):
@@ -40,12 +37,11 @@ def getSwerveModPos(rotEnc: ctre.hardware.CANcoder, driveEnc: rev.SparkRelativeE
 
 
 class DriveTrain():
+
    def __init__(self) -> None:
       super().__init__()
 
       self.robotContainer = robotcontainer
-
-
 
       self.backLeftRotation = rev.CANSparkMax(1, rev.CANSparkMax.MotorType.kBrushless)
       self.backRightRotation = rev.CANSparkMax(8, rev.CANSparkMax.MotorType.kBrushless)
@@ -69,7 +65,7 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      RotKp = 2.5 # 1.35
+      RotKp = 2.5  # 1.35
       RotKi = 0
       RotKd = 0.25
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
@@ -105,10 +101,7 @@ class DriveTrain():
 
       self.gyro = navx.AHRS.create_i2c(wpilib.I2C.Port.kMXP)
 
-
       self.gyro.enableLogging(True)
-
-
 
       frontrightlocation = Translation2d(.381, .381)
       frontleftlocation = Translation2d(.381, -.381)
@@ -118,10 +111,17 @@ class DriveTrain():
       self.kinematics = SwerveDrive4Kinematics(
          frontleftlocation, frontrightlocation, backleftlocation, backrightlocation
       )
+      yaw = -self.gyro.getAngle()
+      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
+      if h < 0:
+         h += 360
 
+      h2 = h / 360
+
+      heading = h2 * (math.pi * 2)
       self.odometry = SwerveDrive4Odometry(
          self.kinematics,
-         wpimath.geometry.Rotation2d(self.gyro.getAngle())
+         Rotation2d(heading)
          # wpimath.geometry.Rotation2d(0.0)
          ,
          (
@@ -129,8 +129,8 @@ class DriveTrain():
             getSwerveModPos(self.FleftEnc, self.frontLeftDriveEnc),
             getSwerveModPos(self.BrightEnc, self.backRightDriveEnc),
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
-         ),
-         #Pose2d(5.0, 13.0, Rotation2d(0))
+         )
+         # Pose2d(5.0, 13.0, Rotation2d(0))
          # starting pose 5 meters against the wall 13.5 from the driver station and a heading of 0
       )
 
@@ -142,6 +142,7 @@ class DriveTrain():
 
    def getPose(self):
       return self.odometry.getPose()
+
    def shouldFlipPath(self):
       pass
       # Boolean supplier that controls when the path will be mirrored for the red alliance
@@ -155,8 +156,17 @@ class DriveTrain():
       return self.lastChassisSpeed
 
    def updateOdometry(self) -> None:
+      yaw = -self.gyro.getAngle()
+      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
+      if h < 0:
+         h += 360
+
+      h2 = h / 360
+
+      heading = h2 * (math.pi * 2)
+
       self.odometry.update(
-         wpimath.geometry.Rotation2d(self.gyro.getYaw())
+         Rotation2d(heading)
          ,
          (
             getSwerveModPos(self.FrightEnc, self.frontRightDriveEnc),
@@ -164,6 +174,27 @@ class DriveTrain():
             getSwerveModPos(self.BrightEnc, self.backRightDriveEnc),
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
          )
+      )
+
+   def resetOdometry(self, newPos: Pose2d) -> None:
+      yaw = -self.gyro.getAngle()
+      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
+      if h < 0:
+         h += 360
+
+      h2 = h / 360
+
+      heading = h2 * (math.pi * 2)
+
+      self.odometry.resetPosition(
+         Rotation2d(heading),
+         modulePositions=(
+            getSwerveModPos(self.FrightEnc, self.frontRightDriveEnc),
+            getSwerveModPos(self.FleftEnc, self.frontLeftDriveEnc),
+            getSwerveModPos(self.BrightEnc, self.backRightDriveEnc),
+            getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
+         ),
+         pose=newPos
       )
 
    def periodic(self) -> None:
@@ -212,8 +243,7 @@ class DriveTrain():
       self.backLeftRotation.set(BLOutput)
       self.backRightRotation.set(BROutput)
 
-
-   def Defense(self, Enable:bool):
+   def Defense(self, Enable: bool):
       if Enable == True:
          newAngle = self.angleToEncTics(230)
 
@@ -262,29 +292,6 @@ class DriveTrain():
       self.backLeftRotation.set(BLOutput)
       self.backRightRotation.set(BROutput)
 
-   def DriveTrainMoveByEncVert(self, distance: float, speed: float):
-      """
-      Moves the robot vertically
-      :param distance: Distance for the robot to move
-      :param speed: Speed at Which the robot will move in
-      :return:
-      """
-      pass
-
-   def DriveTrainMoveByEncHorizontal(self, distance: float, speed: float, direction: str):
-      """
-      Moves the robot Horizontally
-      :param distance: Distance for the robot to move
-      :param speed: Speed at Which the robot will move
-      :param direction: Left or Right
-      :return:
-      """
-      pass
-
-   def DriveTrainMoveByEncSpline(self, distance: float, speed: float):  # dont work on this yet
-
-      pass
-
    def optimize(self, drive_voltage, steer_angle, current_angle):
       delta = steer_angle - current_angle
 
@@ -296,8 +303,7 @@ class DriveTrain():
       else:
          return (drive_voltage, steer_angle)
 
-
-   def setSwivel(self,desiredState:wpimath.kinematics.ChassisSpeeds) -> None:
+   def setSwivel(self, desiredState: wpimath.kinematics.ChassisSpeeds) -> None:
       """
        SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
         frontLeft.setDesiredState(desiredStates[0]);
@@ -310,23 +316,26 @@ class DriveTrain():
       self.states = wpimath.kinematics.SwerveDrive4Kinematics
       self.states.toSwerveModuleStates()
 
-
    def driveFromChassisSpeeds(self, speeds: ChassisSpeeds) -> None:
       self.lastChassisSpeed = speeds
       frontLeft, frontRight, backLeft, backRight = self.kinematics.toSwerveModuleStates(speeds)
 
       frontLeftOptimized = SwerveModuleState.optimize(frontLeft,
                                                       Rotation2d(
-                                                         ticks2rad(self.FleftEnc.get_absolute_position().value_as_double)))
+                                                         ticks2rad(
+                                                            self.FleftEnc.get_absolute_position().value_as_double)))
       frontRightOptimized = SwerveModuleState.optimize(frontRight,
                                                        Rotation2d(
-                                                          ticks2rad(self.FrightEnc.get_absolute_position().value_as_double)))
+                                                          ticks2rad(
+                                                             self.FrightEnc.get_absolute_position().value_as_double)))
       backLeftOptimized = SwerveModuleState.optimize(backLeft,
                                                      Rotation2d(
-                                                        ticks2rad(self.BleftEnc.get_absolute_position().value_as_double)))
+                                                        ticks2rad(
+                                                           self.BleftEnc.get_absolute_position().value_as_double)))
       backRightOptimized = SwerveModuleState.optimize(backRight,
                                                       Rotation2d(
-                                                         ticks2rad(self.BrightEnc.get_absolute_position().value_as_double)))
+                                                         ticks2rad(
+                                                            self.BrightEnc.get_absolute_position().value_as_double)))
 
       self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position().value_as_double,
                                                          lratio(backLeftOptimized.angle.radians())))
@@ -343,4 +352,3 @@ class DriveTrain():
       self.frontRightDrive.set(frontRightOptimized.speed)
 
       self.updateOdometry()
-

@@ -70,13 +70,18 @@ class MyRobot(wpilib.TimedRobot):
 
       self.timer = wpilib.Timer()
       self.timer.start()
+      self.drivetrain.resetOdometry(self.path_test.trajectory.initialPose())
+      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(0))
+      # calculates power given to the motors depending on the user inputs
+      self.drivetrain.driveFromChassisSpeeds(speeds)
 
    def autonomousPeriodic(self):
       self.drivetrain.updateOdometry()
 
+
       # Update robot position on Field2d.
       self.field.setRobotPose(self.drivetrain.getPose())
-
+      """
       if self.timer.get() < self.path_test.trajectory.totalTime():
          # Get the desired pose from the trajectory.
          desiredPose = self.path_test.trajectory.sample(self.timer.get())
@@ -85,9 +90,21 @@ class MyRobot(wpilib.TimedRobot):
          refChassisSpeeds = self.path_test.ramseteController.calculate(
             self.drivetrain.getPose(), desiredPose
          )
-         speeds = ChassisSpeeds.fromRobotRelativeSpeeds(refChassisSpeeds.vx, refChassisSpeeds.vy,
-                                                        refChassisSpeeds.omega, Rotation2d(
-               self.drivetrain.gyro.getAngle()))  # calculates power given to the motors depending on the user inputs
+
+         speeds = refChassisSpeeds.fromFieldRelativeSpeeds(refChassisSpeeds.vx, -refChassisSpeeds.vy,
+                                                           -refChassisSpeeds.omega, Rotation2d(
+               self.heading))
+
+         # calculates power given to the motors depending on the user inputs
+
+         self.drivetrain.driveFromChassisSpeeds(speeds)
+         """
+      if self.timer.get() < 1.5:
+         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-0.3,0,0,Rotation2d(self.heading))
+         self.drivetrain.driveFromChassisSpeeds(speeds)
+      else:
+         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(0))
+         # calculates power given to the motors depending on the user inputs
 
          self.drivetrain.driveFromChassisSpeeds(speeds)
 
@@ -102,8 +119,7 @@ class MyRobot(wpilib.TimedRobot):
       xspeed = self.driver1.getX()
       yspeed = self.driver1.getY()
 
-      # yaw = -self.drivetrain.gyro.getYaw()
-      yaw = -self.drivetrain.gyro.getAngle()
+
 
       if self.driver1.getRawButtonPressed(2):
          self.drivetrain.gyro.zeroYaw()
@@ -113,13 +129,7 @@ class MyRobot(wpilib.TimedRobot):
       else:
          tspeed = 0
 
-      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
-      if h < 0:
-         h += 360
 
-      h2 = h / 360
-
-      heading = h2 * (math.pi * 2)
 
       if abs(xspeed) < .2:  # applies  a deadzone to the joystick
          xspeed = 0
@@ -141,8 +151,9 @@ class MyRobot(wpilib.TimedRobot):
 
       # speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(0.0))
 
-      speeds = ChassisSpeeds.fromRobotRelativeSpeeds(yspeed * self.slow, -xspeed * self.slow, -tspeed, Rotation2d(
-         heading))  # calculates power given to the motors depending on the user inputs
+      speeds = ChassisSpeeds.fromRobotRelativeSpeeds(yspeed * self.slow, -xspeed * self.slow, -tspeed,
+                                                     Rotation2d(
+                                                        self.heading))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
       # print(heading)
@@ -156,7 +167,17 @@ class MyRobot(wpilib.TimedRobot):
 
    def robotPeriodic(self):
       # while the robot is on
-      pass
+      # print(self.drivetrain.odometry.getPose())
+      yaw = -self.drivetrain.gyro.getAngle()
+      h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
+      if h < 0:
+         h += 360
+
+      h2 = h / 360
+
+      self.heading = h2 * (math.pi * 2)
+
+
 
 
 if __name__ == "__main__":

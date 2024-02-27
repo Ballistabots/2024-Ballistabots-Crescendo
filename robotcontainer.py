@@ -5,6 +5,7 @@ from components.shooter import shooter
 from components.state_handler import StateHandler
 from components.vision import Vison
 from auto import path_test
+import robot
 
 
 class RobotContainer:
@@ -18,6 +19,7 @@ class RobotContainer:
       #self.shooter = shooter()
       #self.arm = Arm
       self.path_test = path_test.PathTest
+      self.robot = robot
 
    def getAutoCommand(self):
       # return self.drivetrain.getAutonomousCommand()
