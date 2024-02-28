@@ -67,7 +67,7 @@ class DriveTrain():
 
       RotKp = 2.5  # 1.35 ETHIS AISJD IHA ONE DONT DO THE OTHER ONE
       RotKi = 0
-      RotKd = 0.5
+      RotKd = 0.25  # 0.5
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
       self.BleftPID.enableContinuousInput(-math.pi, math.pi)
       self.BleftPID.setSetpoint(0.0)
@@ -166,8 +166,7 @@ class DriveTrain():
       heading = h2 * (math.pi * 2)
 
       self.odometry.update(
-         Rotation2d(heading)
-         ,
+         Rotation2d(heading),
          (
             getSwerveModPos(self.FrightEnc, self.frontRightDriveEnc),
             getSwerveModPos(self.FleftEnc, self.frontLeftDriveEnc),

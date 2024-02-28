@@ -1,10 +1,11 @@
 import math
+from _ast import Constant
 
 import wpilib
 import wpilib.drive
 import wpilib.drive
 import wpilib.shuffleboard
-from wpimath.geometry import Rotation2d
+from wpimath.geometry import Rotation2d, Pose2d
 from wpimath.kinematics import ChassisSpeeds
 
 from robotcontainer import RobotContainer
@@ -71,9 +72,6 @@ class MyRobot(wpilib.TimedRobot):
       self.timer = wpilib.Timer()
       self.timer.start()
       self.drivetrain.resetOdometry(self.path_test.trajectory.initialPose())
-      speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(0))
-      # calculates power given to the motors depending on the user inputs
-      self.drivetrain.driveFromChassisSpeeds(speeds)
 
    def autonomousPeriodic(self):
       self.drivetrain.updateOdometry()
@@ -81,7 +79,7 @@ class MyRobot(wpilib.TimedRobot):
 
       # Update robot position on Field2d.
       self.field.setRobotPose(self.drivetrain.getPose())
-      """
+
       if self.timer.get() < self.path_test.trajectory.totalTime():
          # Get the desired pose from the trajectory.
          desiredPose = self.path_test.trajectory.sample(self.timer.get())
@@ -91,19 +89,18 @@ class MyRobot(wpilib.TimedRobot):
             self.drivetrain.getPose(), desiredPose
          )
 
-         speeds = refChassisSpeeds.fromFieldRelativeSpeeds(refChassisSpeeds.vx, -refChassisSpeeds.vy,
-                                                           -refChassisSpeeds.omega, Rotation2d(
-               self.heading))
+         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            refChassisSpeeds.vx, refChassisSpeeds.vy,
+            0, Rotation2d(
+               self.heading)
+         )
 
          # calculates power given to the motors depending on the user inputs
 
          self.drivetrain.driveFromChassisSpeeds(speeds)
-         """
-      if self.timer.get() < 1.5:
-         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-0.3,0,0,Rotation2d(self.heading))
-         self.drivetrain.driveFromChassisSpeeds(speeds)
+
       else:
-         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(0))
+         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(self.heading))
          # calculates power given to the motors depending on the user inputs
 
          self.drivetrain.driveFromChassisSpeeds(speeds)
