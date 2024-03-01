@@ -21,12 +21,14 @@ def lratio(angle):
 
 
 def ticks2rad(something):
+   """
+
+   :param something: ticks
+   :return: ur mom
+   """
    return (something / .5) * -math.pi
 
 
-def deg2Rot2d(deg) -> Rotation2d:
-   SwerveModulePosition()
-   return Rotation2d(deg.value_as_double % 360 * (math.pi / 180))
 
 
 def getSwerveModPos(rotEnc: ctre.hardware.CANcoder, driveEnc: rev.SparkRelativeEncoder) -> SwerveModulePosition:
@@ -37,6 +39,7 @@ def getSwerveModPos(rotEnc: ctre.hardware.CANcoder, driveEnc: rev.SparkRelativeE
 
 
 class DriveTrain():
+
 
    def __init__(self) -> None:
       super().__init__()
@@ -69,16 +72,16 @@ class DriveTrain():
       RotKi = 0
       RotKd = 0.25  # 0.5
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.BleftPID.enableContinuousInput(-math.pi, math.pi)
+      self.BleftPID.enableContinuousInput(-0.5, 0.5)
       self.BleftPID.setSetpoint(0.0)
       self.BrightPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.BrightPID.enableContinuousInput(-math.pi, math.pi)
+      self.BrightPID.enableContinuousInput(-0.5, 0.5)
       self.BrightPID.setSetpoint(0.0)
       self.FleftPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.FleftPID.enableContinuousInput(-math.pi, math.pi)
+      self.FleftPID.enableContinuousInput(-0.5, 0.5)
       self.FleftPID.setSetpoint(0.0)
       self.FrightPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.FrightPID.enableContinuousInput(-math.pi, math.pi)
+      self.FrightPID.enableContinuousInput(-0.5, 0.5)
       self.FrightPID.setSetpoint(0.0)
 
       # Drive Wheels Pid
@@ -111,6 +114,7 @@ class DriveTrain():
       self.kinematics = SwerveDrive4Kinematics(
          frontleftlocation, frontrightlocation, backleftlocation, backrightlocation
       )
+
       yaw = -self.gyro.getAngle()
       h = yaw % 360  # formula to transform the yaw given by the gyro into a heading
       if h < 0:
@@ -119,6 +123,7 @@ class DriveTrain():
       h2 = h / 360
 
       heading = h2 * (math.pi * 2)
+
       self.odometry = SwerveDrive4Odometry(
          self.kinematics,
          Rotation2d(heading)
@@ -129,12 +134,12 @@ class DriveTrain():
             getSwerveModPos(self.FleftEnc, self.frontLeftDriveEnc),
             getSwerveModPos(self.BrightEnc, self.backRightDriveEnc),
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
-         )
-         # Pose2d(5.0, 13.0, Rotation2d(0))
-         # starting pose 5 meters against the wall 13.5 from the driver station and a heading of 0
+         ),
+         Pose2d(0, 0, Rotation2d(0))
+
       )
 
-      print("end of init")
+
 
    def getAutonomousCommand(self):
       print("getAutocommand")
@@ -142,6 +147,8 @@ class DriveTrain():
 
    def getPose(self):
       return self.odometry.getPose()
+
+
 
    def shouldFlipPath(self):
       pass
@@ -174,6 +181,13 @@ class DriveTrain():
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
          )
       )
+   """def setModuleStates(self,states: list[SwerveModuleState]):
+      SwerveDrive4Kinematics.desaturateWheelSpeeds(tuple(states), self.getKinematics())
+      self.frontLeftRotation.setDesiredState(states[0])
+      self.frontRightRotation.setDesiredState(states[1])
+      self.backLeftRotation.setDesiredState(states[2])
+      self.backRightRotation.setDesiredState(states[3])
+      """
 
    def resetOdometry(self, newPos: Pose2d) -> None:
       yaw = -self.gyro.getAngle()
@@ -198,7 +212,8 @@ class DriveTrain():
 
    def periodic(self) -> None:
       self.updateOdometry()
-
+   def getKinematics(self):
+      return self.kinematics
    def testDrive(self, speeds: ChassisSpeeds) -> None:
       print("TEST DRIVE")
       print(speeds)
@@ -302,18 +317,64 @@ class DriveTrain():
       else:
          return (drive_voltage, steer_angle)
 
-   def setSwivel(self, desiredState: wpimath.kinematics.ChassisSpeeds) -> None:
-      """
-       SwerveDriveKinematics.normalizeWheelSpeeds(desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
-        frontLeft.setDesiredState(desiredStates[0]);
-        frontRight.setDesiredState(desiredStates[1]);
-        backLeft.setDesiredState(desiredStates[2]);
-        backRight.setDesiredState(desiredStates[3]);
-      :return:
-      """
+   def setSwivel(self, states: list[SwerveModuleState]) -> None:
 
-      self.states = wpimath.kinematics.SwerveDrive4Kinematics
-      self.states.toSwerveModuleStates()
+      frontLeft, frontRight, backLeft, backRight = states
+      frontLeftOptimized = SwerveModuleState.optimize(frontLeft,
+                                                      Rotation2d(
+                                                         ticks2rad(self.FleftEnc.get_absolute_position()._value)))
+      frontRightOptimized = SwerveModuleState.optimize(frontRight,
+                                                       Rotation2d(
+                                                          ticks2rad(self.FrightEnc.get_absolute_position()._value)))
+      backLeftOptimized = SwerveModuleState.optimize(backLeft,
+                                                     Rotation2d(
+                                                        ticks2rad(self.BleftEnc.get_absolute_position()._value)))
+      backRightOptimized = SwerveModuleState.optimize(backRight,
+                                                      Rotation2d(
+                                                         ticks2rad(self.BrightEnc.get_absolute_position()._value)))
+
+      self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value,
+                                                         lratio(backLeftOptimized.angle.radians())))
+      self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value,
+                                                         lratio(frontLeftOptimized.angle.radians())))
+      self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value,
+                                                           lratio(backRightOptimized.angle.radians())))
+      self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,
+                                                            lratio(frontRightOptimized.angle.radians())))
+
+
+   def testDriveFromChassisSpeeds(self, speeds: ChassisSpeeds) -> None:
+      self.lastChassisSpeed = speeds
+
+      speeds = ChassisSpeeds(speeds.vx, -speeds.vy, -speeds.omega)
+      frontLeft, frontRight, backLeft, backRight = self.kinematics.toSwerveModuleStates(speeds)
+
+      frontLeftOptimized = SwerveModuleState.optimize(frontLeft,
+                                                      Rotation2d(
+                                                         ticks2rad(self.FleftEnc.get_absolute_position()._value)))
+      frontRightOptimized = SwerveModuleState.optimize(frontRight,
+                                                       Rotation2d(
+                                                          ticks2rad(self.FrightEnc.get_absolute_position()._value)))
+      backLeftOptimized = SwerveModuleState.optimize(backLeft,
+                                                     Rotation2d(
+                                                        ticks2rad(self.BleftEnc.get_absolute_position()._value)))
+      backRightOptimized = SwerveModuleState.optimize(backRight,
+                                                      Rotation2d(
+                                                         ticks2rad(self.BrightEnc.get_absolute_position()._value)))
+
+      self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value,
+                                                         lratio(backLeftOptimized.angle.radians())))
+      self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value,
+                                                          lratio(frontLeftOptimized.angle.radians())))
+      self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value,
+                                                           lratio(backRightOptimized.angle.radians())))
+      self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,
+                                                            lratio(frontRightOptimized.angle.radians())))
+
+      self.backLeftDrive.set(-backLeftOptimized.speed)
+      self.backRightDrive.set(backRightOptimized.speed)
+      self.frontLeftDrive.set(frontLeftOptimized.speed)
+      self.frontRightDrive.set(frontRightOptimized.speed)
 
    def driveFromChassisSpeeds(self, speeds: ChassisSpeeds) -> None:
       self.lastChassisSpeed = speeds

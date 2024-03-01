@@ -11,12 +11,13 @@ class Arm():
 
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
-      self.position_request = phoenix6.controls.PositionVoltage(0)
+      self.position_request = phoenix6.controls.PositionVoltage(0,feed_forward=0.0075)
 
       cfg = phoenix6.configs.TalonFXConfiguration()
-    #Set PID gains
+      #                                        Set PID gains
       cfg.slot0.k_p = 0.01  # tune these
       cfg.slot0.k_d = 0
+
 
       self.Arm1.configurator.apply(cfg)
 
