@@ -48,7 +48,7 @@ class MyRobot(wpilib.TimedRobot):
       # self.path_test = self.robotContainer.path_test
 
       self.arm = self.robotContainer.arm
-      self.shooter = self.robotContainer.shooter
+      #self.shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -119,15 +119,15 @@ class MyRobot(wpilib.TimedRobot):
                                                         self.heading))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
-      self.arm_value = self.driver2.getY()
-      self.arm.Spin(self.arm_value)
+      self.arm_value = self.driver2.getY() * 500
+      self.arm.moveToPosition(self.arm_value)
 
-      shooterPower = self.driver2.getThrottle()
+      #shooterPower = self.driver2.getThrottle()
 
-      if abs(shooterPower) < 0.2:
-         shooterPower = 0
+      #if abs(shooterPower) < 0.2:
+       #  shooterPower = 0
 
-      self.shooter.Outtake(shooterPower)
+      #self.shooter.Outtake(shooterPower)
 
       # self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
 

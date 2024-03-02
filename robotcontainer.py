@@ -11,12 +11,10 @@ class RobotContainer:
       # self.physics = Physics()
       # self.StateHandler = StateHandler()
       # self.hanger = Hanger()
-      self.shooter = shooter()
+      #self.shooter = shooter()
       self.arm = Arm()
       # self.path_test = path_test.PathTest
 
-   # self.robot = robot
-   # self.SwerveModule = SwerveModule
 
    def getAutoCommand(self):
       # return self.drivetrain.getAutonomousCommand()

@@ -1,7 +1,5 @@
 import phoenix6
 
-import robotcontainer
-
 
 class Arm():
 
@@ -11,29 +9,20 @@ class Arm():
 
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
-      self.position_request = phoenix6.controls.PositionVoltage(0, 0, feed_forward=0.0075)
+      self.position_request = phoenix6.controls.PositionVoltage(0, 0) #0.0075
 
-      cfg = phoenix6.configs.TalonFXConfiguration()
-      #                                        Set PID gains
-      cfg.slot0.k_p = 0.1  # tune these
-      cfg.slot0.k_d = 0.2
+      # cfg = phoenix6.configs.TalonFXConfiguration()
 
-      self.Arm1.set_position(0)
+      testConfig = phoenix6.configs.TalonFXConfiguration()
+      testConfig.slot0.with_k_p(0.001)
+      testConfig.slot0.with_k_i(0)
+      testConfig.slot0.with_k_d(0)
 
-      self.Arm1.configurator.apply(cfg)
+      self.Arm1.configurator.apply(testConfig)
 
-      self.robotContainer = robotcontainer.RobotContainer()
+      # self.robotContainer = robotcontainer.RobotContainer()
 
       # self.Shooter = robotcontainer.shooter
-
-   def moveWithJoystickThrottle(self, throttle: float):
-      """
-
-      :param throttle: throttle input received from the joystick
-      :return: Nothing
-      """
-      self.Arm1.set_control(self.position_request.with_position(throttle))
-      self.Arm2.set_control(self.Arm1follower)
 
    def ArmStartingPos(self):
       """
@@ -49,7 +38,7 @@ class Arm():
       :param newPos: The position to move the arm to
       :return: Nothing
       """
-      self.Arm1.set_control(self.position_request.with_position(newPos))
+      self.Arm1.set_control(self.position_request.with_position(newPos).with_velocity(0.5))
       self.Arm2.set_control(self.Arm1follower)
 
    def getArmPosition(self) -> float:
@@ -80,7 +69,6 @@ class Arm():
    def Spin(self, vel):
       self.Arm1.set_control(phoenix6.controls.DutyCycleOut(vel))
       self.Arm2.set_control(self.Arm1follower)
-
 
    """def moveToAngleShooter(self, RequestedAngle: float):
       
