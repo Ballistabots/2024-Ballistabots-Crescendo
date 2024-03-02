@@ -29,8 +29,6 @@ def ticks2rad(something):
    return (something / .5) * -math.pi
 
 
-
-
 def getSwerveModPos(rotEnc: ctre.hardware.CANcoder, driveEnc: rev.SparkRelativeEncoder) -> SwerveModulePosition:
    return SwerveModulePosition(
       driveEnc.getPosition(),
@@ -39,7 +37,6 @@ def getSwerveModPos(rotEnc: ctre.hardware.CANcoder, driveEnc: rev.SparkRelativeE
 
 
 class DriveTrain():
-
 
    def __init__(self) -> None:
       super().__init__()
@@ -139,24 +136,12 @@ class DriveTrain():
 
       )
 
-
-
    def getAutonomousCommand(self):
       print("getAutocommand")
       # Load the path you want to follow using its name in the GUI
 
    def getPose(self):
       return self.odometry.getPose()
-
-
-
-   def shouldFlipPath(self):
-      pass
-      # Boolean supplier that controls when the path will be mirrored for the red alliance
-      # This will flip the path being followed to the red side of the field.
-      # THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-   # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
 
    def getChassisSpeed(self) -> ChassisSpeeds:
       print(f"{self.lastChassisSpeed=}")
@@ -181,6 +166,7 @@ class DriveTrain():
             getSwerveModPos(self.BleftEnc, self.backLeftDriveEnc)
          )
       )
+
    """def setModuleStates(self,states: list[SwerveModuleState]):
       SwerveDrive4Kinematics.desaturateWheelSpeeds(tuple(states), self.getKinematics())
       self.frontLeftRotation.setDesiredState(states[0])
@@ -212,8 +198,10 @@ class DriveTrain():
 
    def periodic(self) -> None:
       self.updateOdometry()
+
    def getKinematics(self):
       return self.kinematics
+
    def testDrive(self, speeds: ChassisSpeeds) -> None:
       print("TEST DRIVE")
       print(speeds)
@@ -232,54 +220,6 @@ class DriveTrain():
 
       """
       return (to_max - to_min) * (unscaled - from_min) / (from_max - from_min) + to_min
-
-   def TurnSwivelPos(self):
-
-      newAngle = self.angleToEncTics(45)
-
-      FLnewState = self.optimize(0, newAngle, self.FleftEnc.get_absolute_position().value)
-      FRnewState = self.optimize(0, 360 - newAngle, self.FrightEnc.get_absolute_position().value)
-      BLnewState = self.optimize(0, 360 - newAngle, self.BleftEnc.get_absolute_position().value)
-      BRnewState = self.optimize(0, newAngle, self.BrightEnc.get_absolute_position().value)
-
-      FLnewSteerAngle = FLnewState[1]
-      FRnewSteerAngle = FRnewState[1]
-      BLnewSteerAngle = BLnewState[1]
-      BRnewSteerAngle = BRnewState[1]
-
-      FLOutput = self.FleftPID.calculate(self.FleftEnc.get_absolute_position().value, FLnewSteerAngle)
-      FROutput = self.FrightPID.calculate(self.FrightEnc.get_absolute_position().value, FRnewSteerAngle)
-      BLOutput = self.BleftPID.calculate(self.BleftEnc.get_absolute_position().value, BLnewSteerAngle)
-      BROutput = self.BrightPID.calculate(self.BrightEnc.get_absolute_position().value, BRnewSteerAngle)
-
-      self.frontLeftRotation.set(FLOutput)
-      self.frontRightRotation.set(FROutput)
-      self.backLeftRotation.set(BLOutput)
-      self.backRightRotation.set(BROutput)
-
-   def Defense(self, Enable: bool):
-      if Enable == True:
-         newAngle = self.angleToEncTics(230)
-
-         FLnewState = self.optimize(0, newAngle, self.FleftEnc.get_absolute_position().value)
-         FRnewState = self.optimize(0, 360 - newAngle, self.FrightEnc.get_absolute_position().value)
-         BLnewState = self.optimize(0, 360 - newAngle, self.BleftEnc.get_absolute_position().value)
-         BRnewState = self.optimize(0, newAngle, self.BrightEnc.get_absolute_position().value)
-
-         FLnewSteerAngle = FLnewState[1]
-         FRnewSteerAngle = FRnewState[1]
-         BLnewSteerAngle = BLnewState[1]
-         BRnewSteerAngle = BRnewState[1]
-
-         FLOutput = self.FleftPID.calculate(self.FleftEnc.get_absolute_position().value, FLnewSteerAngle)
-         FROutput = self.FrightPID.calculate(self.FrightEnc.get_absolute_position().value, FRnewSteerAngle)
-         BLOutput = self.BleftPID.calculate(self.BleftEnc.get_absolute_position().value, BLnewSteerAngle)
-         BROutput = self.BrightPID.calculate(self.BrightEnc.get_absolute_position().value, BRnewSteerAngle)
-
-         self.frontLeftRotation.set(-FLOutput)
-         self.frontRightRotation.set(-FROutput)
-         self.backLeftRotation.set(BLOutput)
-         self.backRightRotation.set(-BROutput)
 
    def SetSwivelDirection(self, angle):
       # sets the new requested states of the swivels
@@ -342,7 +282,6 @@ class DriveTrain():
       self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,
                                                             lratio(frontRightOptimized.angle.radians())))
 
-
    def testDriveFromChassisSpeeds(self, speeds: ChassisSpeeds) -> None:
       self.lastChassisSpeed = speeds
 
@@ -365,7 +304,7 @@ class DriveTrain():
       self.backLeftRotation.set(-self.BleftPID.calculate(self.BleftEnc.get_absolute_position()._value,
                                                          lratio(backLeftOptimized.angle.radians())))
       self.frontLeftRotation.set(self.FleftPID.calculate(self.FleftEnc.get_absolute_position()._value,
-                                                          lratio(frontLeftOptimized.angle.radians())))
+                                                         lratio(frontLeftOptimized.angle.radians())))
       self.backRightRotation.set(-self.BrightPID.calculate(self.BrightEnc.get_absolute_position()._value,
                                                            lratio(backRightOptimized.angle.radians())))
       self.frontRightRotation.set(-self.FrightPID.calculate(self.FrightEnc.get_absolute_position()._value,

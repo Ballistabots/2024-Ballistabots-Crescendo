@@ -9,8 +9,6 @@ from wpimath.kinematics import ChassisSpeeds
 
 from robotcontainer import RobotContainer
 
-from auto import test as Test
-
 
 class State():
    def __init__(self, state: str):
@@ -47,10 +45,10 @@ class MyRobot(wpilib.TimedRobot):
 
       self.robotContainer = RobotContainer()
       self.drivetrain = self.robotContainer.drivetrain
-      self.path_test = self.robotContainer.path_test
+      # self.path_test = self.robotContainer.path_test
 
-      #self.arm = self.robotContainer.arm
-      #self.shooter = self.robotContainer.shooter
+      self.arm = self.robotContainer.arm
+      self.shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -70,54 +68,18 @@ class MyRobot(wpilib.TimedRobot):
    def autonomousInit(self):
       """This function is run once each time the robot enters autonomous mode."""
 
-      self.field = wpilib.Field2d()
-      self.field.getObject("traj").setTrajectory(self.path_test.trajectory)  # sets the trajectory
+      pass
 
-      self.timer = wpilib.Timer()
-      self.timer.start()
-      self.drivetrain.resetOdometry(self.path_test.trajectory.initialPose())
-      self.test = Test.Test
-
-   def autonomousPeriodic1(self):
-      self.drivetrain.updateOdometry()
-
-      # Update robot position on Field2d.
-      self.field.setRobotPose(self.drivetrain.getPose())
-
-      if self.timer.get() < self.path_test.trajectory.totalTime():
-         # Get the desired pose from the trajectory.
-         desiredPose = self.path_test.trajectory.sample(self.timer.get())
-
-         # Get the reference chassis speeds from the Ramsete controller.
-         refChassisSpeeds = self.path_test.ramseteController.calculate(
-            self.drivetrain.getPose(), desiredPose
-         )
-
-         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            refChassisSpeeds.vy, refChassisSpeeds.vx,
-            refChassisSpeeds.omega, Rotation2d(
-               self.heading)
-         )
-
-         # calculates power given to the motors depending on the user inputs
-
-         self.drivetrain.driveFromChassisSpeeds(speeds)
-
-      else:
-         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, Rotation2d(self.heading))
-         # calculates power given to the motors depending on the user inputs
-
-         self.drivetrain.driveFromChassisSpeeds(speeds)
    def autonomousPeriodic(self):
-
-      self.test.getCommand()
+      pass
 
    def teleopInit(self):
       """This function is called once each time the robot enters teleoperated mode."""
 
       # self.drivetrain.gyro.zeroYaw()  # remove this after testing
       self.slow = 0.7  # slows down the robots max speed
-      #self.arm.ArmStartingPos()
+
+
 
    def teleopPeriodic(self):
       """This function is called periodically during teleoperated mode."""
@@ -157,14 +119,17 @@ class MyRobot(wpilib.TimedRobot):
                                                         self.heading))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
-      #self.arm.moveToPosition(self.driver2.getY() * 10)
-      #shooterPower = self.driver2.getY()
+      self.arm_value = self.driver2.getY()
+      self.arm.Spin(self.arm_value)
 
-      #if abs(shooterPower) < 0.2:
-      #   shooterPower = 0
-      #self.shooter.Outtake(shooterPower)
+      shooterPower = self.driver2.getThrottle()
 
-      #self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
+      if abs(shooterPower) < 0.2:
+         shooterPower = 0
+
+      self.shooter.Outtake(shooterPower)
+
+      # self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
 
    def testInit(self):
       # on test init

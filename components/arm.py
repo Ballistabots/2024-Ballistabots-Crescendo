@@ -11,19 +11,20 @@ class Arm():
 
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
-      self.position_request = phoenix6.controls.PositionVoltage(0,feed_forward=0.0075)
+      self.position_request = phoenix6.controls.PositionVoltage(0, 0, feed_forward=0.0075)
 
       cfg = phoenix6.configs.TalonFXConfiguration()
       #                                        Set PID gains
-      cfg.slot0.k_p = 0.01  # tune these
-      cfg.slot0.k_d = 0
+      cfg.slot0.k_p = 0.1  # tune these
+      cfg.slot0.k_d = 0.2
 
+      self.Arm1.set_position(0)
 
       self.Arm1.configurator.apply(cfg)
 
       self.robotContainer = robotcontainer.RobotContainer()
 
-      self.Shooter = robotcontainer.shooter
+      # self.Shooter = robotcontainer.shooter
 
    def moveWithJoystickThrottle(self, throttle: float):
       """
@@ -76,12 +77,13 @@ class Arm():
       conversion = 360 / 2048
       return angle * conversion
 
-   def moveToAngleShooter(self, RequestedAngle: float):
-      """
-      moves the arm to a requested angle
-      :param RequestedAngle: angle the user wants to aim the arm at
-      :return:
-      """
+   def Spin(self, vel):
+      self.Arm1.set_control(phoenix6.controls.DutyCycleOut(vel))
+      self.Arm2.set_control(self.Arm1follower)
+
+
+   """def moveToAngleShooter(self, RequestedAngle: float):
+      
       ShooterOdo = self.Shooter.ShooterGyroOdo()
       currentAnglePitch = ShooterOdo[1]
       Arm1Enc = self.Arm1.get_position().value_as_double
@@ -89,3 +91,4 @@ class Arm():
       wantedArmPos = self.AngleToEnc(RequestedAngle)
       self.Arm1.set_control(self.position_request.with_position(wantedArmPos))
       self.Arm2.set_control(self.Arm1follower)
+      """
