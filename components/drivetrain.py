@@ -67,20 +67,20 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      RotKp = 1.35  #
+      RotKp = 2.5 #
       RotKi = 0
-      RotKd = 0
+      RotKd = 0.25
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.BleftPID.enableContinuousInput(-math.pi, math.pi)
+      self.BleftPID.enableContinuousInput(-0.5, 0.5)
       self.BleftPID.setSetpoint(0.0)
       self.BrightPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.BrightPID.enableContinuousInput(-math.pi, math.pi)
+      self.BrightPID.enableContinuousInput(-0.5, 0.5)
       self.BrightPID.setSetpoint(0.0)
       self.FleftPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.FleftPID.enableContinuousInput(-math.pi, math.pi)
+      self.FleftPID.enableContinuousInput(-0.5, 0.5)
       self.FleftPID.setSetpoint(0.0)
       self.FrightPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.FrightPID.enableContinuousInput(-math.pi, math.pi)
+      self.FrightPID.enableContinuousInput(-0.5,0.5)
       self.FrightPID.setSetpoint(0.0)
 
       # Drive Wheels Pid
@@ -142,7 +142,8 @@ class DriveTrain():
       # THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
    # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
-
+   def getGyro(self):
+      return self.gyro.getAngle()
    def getChassisSpeed(self) -> ChassisSpeeds:
       print(f"{self.lastChassisSpeed=}")
       return self.lastChassisSpeed

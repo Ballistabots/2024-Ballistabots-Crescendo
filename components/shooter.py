@@ -10,7 +10,7 @@ class shooter():
 
       self.control = phoenix6.controls.DutyCycleOut(0)
 
-      #self.Intake = rev.CANSparkMax(14, rev.CANSparkMax.MotorType.kBrushless)
+      self.Intake = rev.CANSparkMax(14, rev.CANSparkMax.MotorType.kBrushless)
 
       # self.ShooterGyro = navx.AHRS.create_i2c(wpilib.I2C.Port(0))
       # self.ShooterGyro.enableLogging(True)

@@ -45,9 +45,14 @@ class MyRobot(wpilib.TimedRobot):
 
       self.robotContainer = RobotContainer()
       self.drivetrain = self.robotContainer.drivetrain
+      #self.auto = self.robotContainer.ThreeNote()
+
       # self.path_test = self.robotContainer.path_test
 
-      self.arm = self.robotContainer.arm
+      #self.arm = self.robotContainer.arm
+
+      #self.arm_total = 0
+
       #self.shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
@@ -67,11 +72,15 @@ class MyRobot(wpilib.TimedRobot):
 
    def autonomousInit(self):
       """This function is run once each time the robot enters autonomous mode."""
+      self.Time = wpilib.Timer
 
       pass
 
    def autonomousPeriodic(self):
-      pass
+      currentTime = self.Time.getTime()
+      #AutoSpeeds = self.auto.Path(currentTime)
+      #self.drivetrain.driveFromChassisSpeeds(AutoSpeeds)
+
 
    def teleopInit(self):
       """This function is called once each time the robot enters teleoperated mode."""
@@ -119,17 +128,20 @@ class MyRobot(wpilib.TimedRobot):
                                                         self.heading))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
-      self.arm_value = self.driver2.getY() * 500
-      self.arm.moveToPosition(self.arm_value)
+      #self.arm_value = self.driver2.getY() * 500
+
+      #self.arm_total = self.arm_value + self.arm_value
+
+      #self.arm.moveToPosition(self.arm_total)
 
       #shooterPower = self.driver2.getThrottle()
 
-      #if abs(shooterPower) < 0.2:
-       #  shooterPower = 0
+      #if abs(shooterPower) < 0:
+      #   shooterPower = 0
 
       #self.shooter.Outtake(shooterPower)
 
-      # self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
+      #self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
 
    def testInit(self):
       # on test init
