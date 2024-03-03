@@ -3,15 +3,11 @@ import robotcontainer as RobotContainer
 
 class AutoAim():
    def __init__(self) -> None:
-      self.Eyes = RobotContainer.Vison
+      self.Eyes = RobotContainer.Vision
       self.Arm = RobotContainer.Arm
       self.Shooter = RobotContainer.shooter
       self.pitch = 0
 
-      self.CAMERA1_CAMERA_HEIGHT = 0  # in meters
-      self.CAMERA1_PITCH = 0  # in rads
-
-      self.TARGET_HEIGHT = 4.49  # height of the apriltag target in meters
 
    def Aim(self):
       """
@@ -21,14 +17,19 @@ class AutoAim():
       results = self.Eyes.getResults()
       target = results.targets
       for i in target:
-         self.pitch = i.getPitch()
-      Rads = self.Eyes.PitchToRads(self.pitch)
-      distance = self.Eyes.GetDistanceFromBestTag(self.CAMERA1_CAMERA_HEIGHT, self.TARGET_HEIGHT, self.CAMERA1_PITCH,
-                                                  Rads)
-      RequestedAngle = self.DistanceToAngle(distance)
 
-      self.Arm.moveToPosition()
+         if i.getFiducialId() == 3 or i.getFiducialId() == 7:
+            self.id = i.getFiducialId()
+            self.pitch = i.getPitch()
+         else:
+            self.pitch = 0
 
+      if self.pitch != 0 :
+         distance = self.Eyes.GetDistanceFromSpeaker(self.pitch)
+         self.Arm.moveToPosition()
+         print(distance)
+      else:
+         pass
    def DistanceToAngle(self, distance: float):
       """
       used to find the optimal angle depending on the distance between the robot and speaker

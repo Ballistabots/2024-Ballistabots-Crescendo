@@ -3,13 +3,17 @@ import math
 import photonlibpy.photonCamera
 
 
-class Vison:
+class Vision:
    def __init__(self):
       self.camera1 = photonlibpy.photonCamera.PhotonCamera(
          "Camera1")  # initializes a camera using the photonlib library
 
-      self.CAMERA1_CAMERA_HEIGHT = 0  # in meters. height the camera is at
-      self.CAMERA1_PITCH = 0  # in rads. where the camera is pointing
+      self.CAMERA1_CAMERA_HEIGHT = 0.258  # in meters. height the camera is at
+      #camera height in inches = 10 1/8
+
+      self.CAMERA1_PITCH = self.PitchToRads(34)  # in rads. where the camera is pointing
+
+      #in degress 34
 
       self.TARGET_HEIGHT = 4.49  # height of the apriltag target in meters
 
@@ -58,3 +62,6 @@ class Vison:
       :return: Distance in meters from the target
       """
       return (targetHeightMeters - cameraHeightMeters) / math.tan(cameraPitchRadians + targetPitchRadians)
+
+   def GetDistanceFromSpeaker(self, target_pitch: float):
+      return self.GetDistanceFromBestTag(self.CAMERA1_CAMERA_HEIGHT,self.TARGET_HEIGHT,self.CAMERA1_PITCH, self.PitchToRads(target_pitch))

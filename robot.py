@@ -47,13 +47,15 @@ class MyRobot(wpilib.TimedRobot):
       self.drivetrain = self.robotContainer.drivetrain
       #self.auto = self.robotContainer.ThreeNote()
 
+      self.AutoAim = self.robotContainer.auto_aim
+
       # self.path_test = self.robotContainer.path_test
 
-      #self.arm = self.robotContainer.arm
+      self.arm = self.robotContainer.arm
 
-      #self.arm_total = 0
+      self.arm_total = 0
 
-      #self.shooter = self.robotContainer.shooter
+      self.Shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -87,7 +89,8 @@ class MyRobot(wpilib.TimedRobot):
 
       # self.drivetrain.gyro.zeroYaw()  # remove this after testing
       self.slow = 0.7  # slows down the robots max speed
-
+      self.IntakeSpeed = 0
+      self.armPos = 0
 
 
    def teleopPeriodic(self):
@@ -128,20 +131,36 @@ class MyRobot(wpilib.TimedRobot):
                                                         self.heading))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
-      #self.arm_value = self.driver2.getY() * 500
+      self.arm_value = self.driver2.getY() * 500
 
-      #self.arm_total = self.arm_value + self.arm_value
+      self.arm_total = self.arm_value + self.arm_value
 
-      #self.arm.moveToPosition(self.arm_total)
+      self.arm.moveToPosition(self.arm_total)
 
-      #shooterPower = self.driver2.getThrottle()
+      if self.driver2.getRawButtonPressed(7):
+         pass
 
-      #if abs(shooterPower) < 0:
-      #   shooterPower = 0
 
-      #self.shooter.Outtake(shooterPower)
 
-      #self.shooter.Intake(button=self.driver2.getRawButtonPressed(2))
+      shooterPower = self.driver2.getThrottle()
+
+      if shooterPower < 0:
+         shooterPower = 0
+
+      if self.driver2.getRawButtonPressed(5):
+         self.IntakeSpeed = 0.3
+      elif self.driver2.getRawButtonPressed(6):
+         self.IntakeSpeed = -0.1
+      elif self.driver2.getRawButtonPressed(3):
+         self.IntakeSpeed = 0
+
+      self.Shooter.SetIntakePower(self.IntakeSpeed)
+      self.Shooter.Outtake(-shooterPower)
+
+      print(self.arm.getArmPosition())
+
+      #self.AutoAim.Aim()
+
 
    def testInit(self):
       # on test init

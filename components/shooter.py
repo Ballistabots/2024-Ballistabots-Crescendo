@@ -12,20 +12,21 @@ class shooter():
 
       self.Intake = rev.CANSparkMax(14, rev.CANSparkMax.MotorType.kBrushless)
 
+
+
       # self.ShooterGyro = navx.AHRS.create_i2c(wpilib.I2C.Port(0))
       # self.ShooterGyro.enableLogging(True)
 
-   def Intake(self, button: bool, toggle: bool = False) -> None:
-      if toggle:
-         #self.Intake.set(1.0)
+   def Intakes(self, button: bool) -> None:
+      if button:
+         self.Intake.set(1.0)
          pass
       else:
-         if button:
-            #self.Intake.set(1.0)
-            pass
-         else:
-            #self.Intake.set(0.0)
-            pass
+         self.Intake.set(0)
+
+   def SetIntakePower(self, power: float) -> None:
+      self.Intake.set(power)
+
    def Outtake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, False))
