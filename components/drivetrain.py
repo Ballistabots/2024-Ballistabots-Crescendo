@@ -143,7 +143,7 @@ class DriveTrain():
 
    # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
    def getGyro(self):
-      return self.gyro.getAngle()
+      return -self.gyro.getAngle()
    def getChassisSpeed(self) -> ChassisSpeeds:
       print(f"{self.lastChassisSpeed=}")
       return self.lastChassisSpeed

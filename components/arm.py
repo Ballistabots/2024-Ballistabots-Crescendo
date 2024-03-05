@@ -7,23 +7,21 @@ class Arm():
       self.Arm1 = phoenix6.hardware.TalonFX(17, "rio")
       self.Arm2 = phoenix6.hardware.TalonFX(18, "rio")
 
-
-
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
-      self.position_request = phoenix6.controls.PositionVoltage(0, 0,feed_forward=-0.22) #0.0075
 
-      # cfg = phoenix6.configs.TalonFXConfiguration()
-
-      testConfig = phoenix6.configs.TalonFXConfiguration()
-      testConfig.slot0.with_k_p(0.006)
-      testConfig.slot0.with_k_i(0)
-      testConfig.slot0.with_k_d(0)
+      self.position_request = phoenix6.controls.PositionVoltage(0,0).with_slot(0).with_feed_forward(0.07)  # 0.37
 
 
-      self.Arm1.configurator.apply(testConfig)
+
+      cfg = phoenix6.configs.Slot0Configs()
+      cfg.k_p = 0.2
+      cfg.k_i = 0
+      cfg.k_d = 0
 
 
+
+      self.Arm1.configurator.apply(cfg)
 
       # self.robotContainer = robotcontainer.RobotContainer()
 
@@ -38,7 +36,8 @@ class Arm():
       self.Arm2.set_control(self.Arm1follower)
 
    def moveToEncoderPos(self, enc_pos):
-      self.Arm1.set_position(enc_pos)
+
+      self.Arm1.set_control(self.position_request.with_position(enc_pos))
       self.Arm2.set_control(self.Arm1follower)
 
    def moveToPosition(self, newPos: float):
@@ -49,7 +48,6 @@ class Arm():
       """
       self.Arm1.set_control(self.position_request.with_position(newPos).with_velocity(1))
       self.Arm2.set_control(self.Arm1follower)
-
 
    def getArmPosition(self) -> float:
       """
@@ -81,8 +79,5 @@ class Arm():
       self.Arm2.set_control(self.Arm1follower)
 
    def moveToAngleShooter(self, RequestedAngle: float):
-
-
       self.Arm1.set_control(self.position_request.with_position(RequestedAngle).with_velocity(1))
       self.Arm2.set_control(self.Arm1follower)
-

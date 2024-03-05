@@ -7,7 +7,7 @@ from components.vision import Vision
 from components.hanger import Hanger
 from components.shooter import shooter
 from components.arm import Arm
-#from auto.threeNote import ThreeNote
+from auto.threeNote import ThreeNote
 
 class RobotContainer:
    def __init__(self) -> None:
@@ -17,9 +17,9 @@ class RobotContainer:
       self.physics = Physics()
       self.StateHandler = StateHandler()
       #self.hanger = Hanger()
-      self.shooter = shooter()
-      self.arm = Arm()
-      #self.ThreeNote = ThreeNote("nah id win", True, self.drivetrain)
+      #self.shooter = shooter()
+      #self.arm = Arm()
+      self.ThreeNote = ThreeNote("nah id win", True, self.drivetrain)
 
 
 

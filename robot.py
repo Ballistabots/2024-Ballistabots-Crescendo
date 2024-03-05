@@ -1,5 +1,3 @@
-import math
-
 import wpilib
 import wpilib.drive
 import wpilib.drive
@@ -45,17 +43,17 @@ class MyRobot(wpilib.TimedRobot):
 
       self.robotContainer = RobotContainer()
       self.drivetrain = self.robotContainer.drivetrain
-      #self.auto = self.robotContainer.ThreeNote()
+      self.auto = self.robotContainer.ThreeNote
 
-      self.AutoAim = self.robotContainer.auto_aim
+      # self.AutoAim = self.robotContainer.auto_aim
 
       # self.path_test = self.robotContainer.path_test
 
-      self.arm = self.robotContainer.arm
+      # self.arm = self.robotContainer.arm
 
       self.arm_total = 0
 
-      self.Shooter = self.robotContainer.shooter
+      # self.Shooter = self.robotContainer.shooter
 
       self.BleftRotation = self.robotContainer.drivetrain.backLeftRotation
       self.FleftRotation = self.robotContainer.drivetrain.frontLeftRotation
@@ -75,14 +73,12 @@ class MyRobot(wpilib.TimedRobot):
    def autonomousInit(self):
       """This function is run once each time the robot enters autonomous mode."""
       self.Time = wpilib.Timer
-
-      pass
+      self.drivetrain.gyro.zeroYaw()
 
    def autonomousPeriodic(self):
-      currentTime = self.Time.getTime()
-      #AutoSpeeds = self.auto.Path(currentTime)
-      #self.drivetrain.driveFromChassisSpeeds(AutoSpeeds)
-
+      currentTime = self.Time.getMatchTime()
+      autoSpeeds = self.auto.Path(currentTime)
+      self.drivetrain.driveFromChassisSpeeds(autoSpeeds)
 
    def teleopInit(self):
       """This function is called once each time the robot enters teleoperated mode."""
@@ -90,8 +86,8 @@ class MyRobot(wpilib.TimedRobot):
       # self.drivetrain.gyro.zeroYaw()  # remove this after testing
       self.slow = 0.7  # slows down the robots max speed
       self.IntakeSpeed = 0
-      self.armPos = 0
-
+      self.armPos = -0.11
+      self.shooter_power = 0
 
    def teleopPeriodic(self):
       """This function is called periodically during teleoperated mode."""
@@ -106,11 +102,11 @@ class MyRobot(wpilib.TimedRobot):
       else:
          tspeed = 0
 
-      if abs(xspeed) < .2:  # applies  a deadzone to the joystick
+      if abs(xspeed) < .15:  # applies  a deadzone to the joystick
          xspeed = 0
       if abs(yspeed) < .2:
          yspeed = 0
-      if abs(tspeed) < .15:
+      if abs(tspeed) < .5:
          tspeed = 0
 
       if xspeed == 0 and yspeed == 0 and tspeed == 0:  # if no speed is given to the motors there will be no power in any of the motors
@@ -127,60 +123,49 @@ class MyRobot(wpilib.TimedRobot):
       # speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-yspeed * 0.5, xspeed * 0.5, tspeed * 0.5, Rotation2d(0.0))
 
       speeds = ChassisSpeeds.fromRobotRelativeSpeeds(yspeed * self.slow, -xspeed * self.slow, -tspeed,
-                                                     Rotation2d(
-                                                        self.heading))  # calculates power given to the motors depending on the user inputs
+                                                     Rotation2d().fromDegrees(
+                                                        self.yaw))  # calculates power given to the motors depending on the user inputs
       self.drivetrain.driveFromChassisSpeeds(speeds)
 
-      self.arm_value = self.driver2.getY() * 500
-
-      self.arm_total = self.arm_value + self.arm_value
-
-      self.arm.moveToPosition(self.arm_total)
+      # self.armPos = self.driver2.getY() * 500
 
       if self.driver2.getRawButtonPressed(7):
-         pass
+         self.armPos = -0.11
+      elif self.driver2.getRawButtonPressed(8):
+         self.armPos = -48.349
 
+      # self.arm.moveToEncoderPos(self.armPos)
 
+      # self.arm.moveToPosition(self.armPos)
 
-      shooterPower = self.driver2.getThrottle()
+      if self.driver2.getRawButtonPressed(11):
+         self.shooter_power = -0.1
+      elif self.driver2.getRawButtonPressed(12):
+         self.shooter_power = -1
+         self.armPos = -23.547
 
-      if shooterPower < 0:
-         shooterPower = 0
+      # self.Shooter.fancy_intake(self.driver2.getRawButtonPressed(5), self.driver2.getRawButtonPressed(6),
+      #                         self.driver2.getRawButtonPressed(3))
 
-      if self.driver2.getRawButtonPressed(5):
-         self.IntakeSpeed = 0.3
-      elif self.driver2.getRawButtonPressed(6):
-         self.IntakeSpeed = -0.1
-      elif self.driver2.getRawButtonPressed(3):
-         self.IntakeSpeed = 0
+      # if self.driver2.getTrigger():
+      #  self.Shooter.Outtake(self.shooter_power)
+      # else:
+      #  self.Shooter.Outtake(0)
 
-      self.Shooter.SetIntakePower(self.IntakeSpeed)
-      self.Shooter.Outtake(-shooterPower)
-
-      print(self.arm.getArmPosition())
-
-      #self.AutoAim.Aim()
-
+      # self.AutoAim.Aim()
 
    def testInit(self):
       # on test init
       pass
 
    def testPeriodic(self):
+      # print(self.arm.getArmPosition())
       pass
 
    def robotPeriodic(self):
       # while the robot is on
       # print(self.drivetrain.odometry.getPose())
       self.yaw = -self.drivetrain.gyro.getAngle()
-
-      h = self.yaw % 360  # formula to transform the yaw given by the gyro into a heading
-      if h < 0:
-         h += 360
-
-      self.h2 = h / 360
-
-      self.heading = self.h2 * (math.pi * 2)
 
 
 if __name__ == "__main__":
