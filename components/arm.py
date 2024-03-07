@@ -10,14 +10,14 @@ class Arm():
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
 
-      self.position_request = phoenix6.controls.PositionVoltage(0,0).with_slot(0).with_feed_forward(0.07)  # 0.37
+      self.position_request = phoenix6.controls.PositionVoltage(0,0).with_slot(0).with_feed_forward(0)  # 0.37
 
 
 
       cfg = phoenix6.configs.Slot0Configs()
-      cfg.k_p = 0.2
+      cfg.k_p = 1.4
       cfg.k_i = 0
-      cfg.k_d = 0
+      cfg.k_d = 4
 
 
 
@@ -46,7 +46,7 @@ class Arm():
       :param newPos: The position to move the arm to
       :return: Nothing
       """
-      self.Arm1.set_control(self.position_request.with_position(newPos).with_velocity(1))
+      self.Arm1.set_control(self.position_request.with_position(newPos).with_velocity(5))
       self.Arm2.set_control(self.Arm1follower)
 
    def getArmPosition(self) -> float:

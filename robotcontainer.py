@@ -17,8 +17,8 @@ class RobotContainer:
       self.physics = Physics()
       self.StateHandler = StateHandler()
       #self.hanger = Hanger()
-      #self.shooter = shooter()
-      #self.arm = Arm()
+      self.shooter = shooter()
+      self.arm = Arm()
       self.ThreeNote = ThreeNote("nah id win", True, self.drivetrain)
 
 

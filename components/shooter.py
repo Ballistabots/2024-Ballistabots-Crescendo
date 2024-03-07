@@ -4,6 +4,7 @@ import wpilib
 
 
 
+
 class shooter():
 
    def __init__(self):
@@ -34,6 +35,7 @@ class shooter():
          self.timer.reset()
          self.timer.start()
          self.stop = False
+
 
       elif reverse_intake:
          self.Intake.set(-0.1)
