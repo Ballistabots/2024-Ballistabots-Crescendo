@@ -15,9 +15,9 @@ class Arm():
 
 
       cfg = phoenix6.configs.Slot0Configs()
-      cfg.k_p = 1.4
+      cfg.k_p = 0.7 #was 0.9
       cfg.k_i = 0
-      cfg.k_d = 4
+      cfg.k_d = 0.3
 
 
 

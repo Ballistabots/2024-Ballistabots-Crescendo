@@ -31,6 +31,12 @@ class shooter():
 
 
    def fancy_intake(self,intake:bool,reverse_intake:bool, stop:bool) -> None:
+
+      if self.Intake.getOutputCurrent() > 0:
+         print(self.Intake.getOutputCurrent())
+      if self.Intake.getOutputCurrent() > 18.1 :
+         print("Stoping")
+         self.stop = True
       if intake:
          self.timer.reset()
          self.timer.start()
@@ -48,6 +54,8 @@ class shooter():
          if stop:
             self.stop = True
             self.Intake.set(0)
+      elif self.stop:
+         self.Intake.set(0)
 
 
 

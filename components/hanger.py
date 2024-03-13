@@ -4,6 +4,7 @@ import wpilib
 class Hanger():
 
    def __init__(self):
+
       self.compressor = wpilib.Compressor(wpilib.PneumaticsModuleType.CTREPCM)
 
       # DoubleSolenoid corresponds to a double solenoid.
