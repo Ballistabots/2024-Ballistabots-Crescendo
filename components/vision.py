@@ -8,14 +8,15 @@ class Vision:
       self.camera1 = photonlibpy.photonCamera.PhotonCamera(
          "Camera1")  # initializes a camera using the photonlib library
 
+
       self.CAMERA1_CAMERA_HEIGHT = 0.258  # in meters. height the camera is at
-      #camera height in inches = 10 1/8
+      #camera height in inches = 7.715
 
       self.CAMERA1_PITCH = self.PitchToRads(34)  # in rads. where the camera is pointing
 
       #in degress 34
 
-      self.TARGET_HEIGHT = 4.49  # height of the apriltag target in meters
+      self.TARGET_HEIGHT = 1.555  # height of the apriltag target in meters
 
       self.aprilTags = (0,  # large array full of apriltag names for quick access
                         "Blue Source Right",

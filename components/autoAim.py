@@ -1,35 +1,41 @@
-import robotcontainer as RobotContainer
+import robotcontainer
 
 
 class AutoAim():
    def __init__(self) -> None:
-      self.Eyes = RobotContainer.Vision
-      self.Arm = RobotContainer.Arm
-      self.Shooter = RobotContainer.shooter
-      self.pitch = 0
 
+      self.Eyes = robotcontainer.Vision()
+      self.pitch = 0
 
    def Aim(self):
       """
       Aims the arm towards the optimal angle to have automatic shooting
-      :return: None
+      :return: speed for motors to spin relative to the distance
       """
       results = self.Eyes.getResults()
-      target = results.targets
-      for i in target:
+      if results.hasTargets():
+         target = results.targets
+         for i in target:
 
-         if i.getFiducialId() == 3 or i.getFiducialId() == 7:
-            self.id = i.getFiducialId()
-            self.pitch = i.getPitch()
+            if i.getFiducialId() == 3 or i.getFiducialId() == 7:
+               self.id = i.getFiducialId()
+               self.pitch = i.getPitch()
+            else:
+               self.pitch = 0
+
+         if self.pitch != 0:
+            distance = self.Eyes.GetDistanceFromSpeaker(self.pitch)
+            # distance to arm encoder stuff
+
+
+            return (self.scale_number(distance, 0.6, 1, 1, 14/3),self.scale_number(distance,12.4,36,1,14/3))#where the arm needs to be aimed
          else:
-            self.pitch = 0
-
-      if self.pitch != 0 :
-         distance = self.Eyes.GetDistanceFromSpeaker(self.pitch)
-         self.Arm.moveToPosition()
-         print(distance)
+            print("No tag")
+            pass
       else:
+         return (0.1,0)
          pass
+
    def DistanceToAngle(self, distance: float):
       """
       used to find the optimal angle depending on the distance between the robot and speaker

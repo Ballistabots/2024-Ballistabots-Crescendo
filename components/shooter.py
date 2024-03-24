@@ -3,8 +3,6 @@ import rev
 import wpilib
 
 
-
-
 class shooter():
 
    def __init__(self):
@@ -21,34 +19,28 @@ class shooter():
 
       self.timer.start()
 
-
-
-
-
-
       # self.ShooterGyro = navx.AHRS.create_i2c(wpilib.I2C.Port(0))
-      # self.ShooterGyro.enableLogging(True)
+      # self.ShooterGyro.enableLogging(True);
 
+   def evenFancierIntake(self, intake: bool, reverse_intake: bool, stop: bool):
+      # current stuff
 
-   def fancy_intake(self,intake:bool,reverse_intake:bool, stop:bool) -> None:
+      pass
 
-      if self.Intake.getOutputCurrent() > 0:
-         print(self.Intake.getOutputCurrent())
-      if self.Intake.getOutputCurrent() > 18.1 :
+   def fancy_intake(self, intake: bool, reverse_intake: bool, stop: bool) -> None:
+
+      if self.Intake.getOutputCurrent() > 18.1:
          print("Stoping")
          self.stop = True
       if intake:
-         self.timer.reset()
-         self.timer.start()
          self.stop = False
 
-
-      elif reverse_intake:
-         self.Intake.set(-0.1)
       elif stop:
          self.Intake.set(0)
 
-      if self.stop == False:
+      if self.stop == False and reverse_intake:
+         self.Intake.set(-0.1)
+      elif self.stop == False :
 
          self.Intake.set(0.3)
          if stop:
@@ -56,9 +48,6 @@ class shooter():
             self.Intake.set(0)
       elif self.stop:
          self.Intake.set(0)
-
-
-
 
    def getTime(self):
       return self.timer.get()
@@ -69,7 +58,7 @@ class shooter():
    def Outtake(self, velocity: float) -> None:
       self.Outtake1.set_control(self.control.with_output(velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, False))
-      #self.Intake.set(-velocity)
+      # self.Intake.set(-velocity)
 
    def OuttakeButIntake(self, velocity: float) -> None:
       """
@@ -79,7 +68,7 @@ class shooter():
       """
       self.Outtake1.set_control(self.control.with_output(-velocity))
       self.Outtake2.set_control(phoenix6.controls.Follower(15, True))
-      #self.Intake.set(velocity)
+      # self.Intake.set(velocity)
 
    def ShooterGyroOdo(self) -> tuple:
       """

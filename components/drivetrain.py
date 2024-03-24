@@ -3,7 +3,6 @@ import math
 # from wpilib import DriverStation
 import navx
 import phoenix6 as ctre
-import photonlibpy.photonCamera
 import rev
 import wpilib
 import wpimath
@@ -43,7 +42,7 @@ class DriveTrain():
 
       self.robotContainer = robotcontainer
 
-      self.camera = photonlibpy.photonCamera.PhotonCamera("Camera1")
+      self.Eyes = self.robotContainer.Vision
 
       self.backLeftRotation = rev.CANSparkMax(1, rev.CANSparkMax.MotorType.kBrushless)
       self.backRightRotation = rev.CANSparkMax(8, rev.CANSparkMax.MotorType.kBrushless)
@@ -54,6 +53,16 @@ class DriveTrain():
       self.backRightDrive = rev.CANSparkMax(4, rev.CANSparkMax.MotorType.kBrushless)
       self.frontLeftDrive = rev.CANSparkMax(6, rev.CANSparkMax.MotorType.kBrushless)
       self.frontRightDrive = rev.CANSparkMax(5, rev.CANSparkMax.MotorType.kBrushless)
+
+      self.backLeftRotation.setOpenLoopRampRate(0.2)
+      self.frontLeftRotation.setOpenLoopRampRate(0.2)
+      self.backRightRotation.setOpenLoopRampRate(0.2)
+      self.frontRightRotation.setOpenLoopRampRate(0.2)
+
+      self.backLeftDrive.setOpenLoopRampRate(0.2)
+      self.frontLeftDrive.setOpenLoopRampRate(0.2)
+      self.backRightDrive.setOpenLoopRampRate(0.2)
+      self.frontRightDrive.setOpenLoopRampRate(0.2)
 
       self.frontRightDriveEnc = self.frontRightDrive.getEncoder(rev.SparkRelativeEncoder.Type.kHallSensor, 42)
       self.frontLeftDriveEnc = self.frontLeftDrive.getEncoder(rev.SparkRelativeEncoder.Type.kHallSensor, 42)
@@ -67,9 +76,9 @@ class DriveTrain():
 
       self.lastChassisSpeed = ChassisSpeeds(0, 0, 0)
 
-      RotKp = 2.5 #
+      RotKp = 1.5  #
       RotKi = 0
-      RotKd = 0.25
+      RotKd = 0
       self.BleftPID = controller.PIDController(RotKp, RotKi, RotKd)
       self.BleftPID.enableContinuousInput(-0.5, 0.5)
       self.BleftPID.setSetpoint(0.0)
@@ -80,9 +89,10 @@ class DriveTrain():
       self.FleftPID.enableContinuousInput(-0.5, 0.5)
       self.FleftPID.setSetpoint(0.0)
       self.FrightPID = controller.PIDController(RotKp, RotKi, RotKd)
-      self.FrightPID.enableContinuousInput(-0.5,0.5)
+      self.FrightPID.enableContinuousInput(-0.5, 0.5)
       self.FrightPID.setSetpoint(0.0)
 
+      self.robotRotPID = controller.PIDController(0.001, 0, 0)
       # Drive Wheels Pid
 
       DriveKp = 0.01
@@ -144,6 +154,7 @@ class DriveTrain():
    # return DriverStation.getAlliance() == DriverStation.Alliance.kRed
    def getGyro(self):
       return -self.gyro.getAngle()
+
    def getChassisSpeed(self) -> ChassisSpeeds:
       print(f"{self.lastChassisSpeed=}")
       return self.lastChassisSpeed
@@ -206,8 +217,7 @@ class DriveTrain():
       self.backLeftRotation.set(BLOutput)
       self.backRightRotation.set(BROutput)
 
-
-   def Defense(self, Enable:bool):
+   def Defense(self, Enable: bool):
       if Enable == True:
          newAngle = self.angleToEncTics(230)
 
@@ -323,3 +333,15 @@ class DriveTrain():
 
       self.updateOdometry()
 
+   def align(self):
+      results = self.Eyes.getResults()
+      if results.hasTargets():
+         for i in results.getTargets():
+            if i.getFiducialId() == 7 or i.getFiducialId() == 3:
+               self.yaw = i.getYaw()
+            else:
+               return 0
+
+         return self.robotRotPID.calculate(Rotation2d.fromDegrees(self.gyro.getAngle()).degrees(), self.yaw)
+      else:
+         return 0

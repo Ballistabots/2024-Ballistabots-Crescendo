@@ -10,6 +10,8 @@ class Arm():
       self.Arm1follower = phoenix6.controls.Follower(17, True)
 
 
+
+
       self.position_request = phoenix6.controls.PositionVoltage(0,0).with_slot(0).with_feed_forward(0)  # 0.37
 
 
@@ -18,6 +20,7 @@ class Arm():
       cfg.k_p = 0.7 #was 0.9
       cfg.k_i = 0
       cfg.k_d = 0.3
+
 
 
 
